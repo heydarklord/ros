@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROS2 Squad — Learn Together</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: { "primary": "#13ecec", "secondary": "#a855f7", "accent": "#22c55e", "background-light": "#f6f8f8", "background-dark": "#07080f", "surface": "#102222" },
+                fontFamily: { "display": ["Inter", "sans-serif"], "mono": ["JetBrains Mono", "monospace"] },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>
+    .glass-panel { background: rgba(19, 236, 236, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(19, 236, 236, 0.1); }
+    .glass-card { background: rgba(16, 34, 34, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(19, 236, 236, 0.15); }
+    .glow-border-primary { box-shadow: 0 0 15px rgba(19, 236, 236, 0.2); }
+    .neo-gradient { background: linear-gradient(135deg, #13ecec 0%, #a855f7 100%); }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #13ecec33; border-radius: 10px; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080f;--bg2:#0c0e1a;--bg3:#111425;--card:#0e1020;
+  --border:#1a1f35;--border2:#222840;
+  --neon:#00ff87;--neon2:#00c4ff;--neon3:#ff6b35;--neon4:#a855f7;--neon5:#ffd60a;
+  --text:#eef0f8;--text2:#8892b0;--text3:#4a5270;
+  --done:#00ff87;--inprog:#ffd60a;
+  --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 80% 10%,rgba(0,255,135,.04) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 50% at 10% 80%,rgba(0,196,255,.04) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 30% at 50% 50%,rgba(168,85,247,.02) 0%,transparent 60%);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,135,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,135,.015) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+/* ONBOARDING */
+#ob{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.ob-box{width:400px;max-width:92vw;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;text-align:center;position:relative;overflow:hidden;}
+.ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--neon),var(--neon2),var(--neon4));}
+.ob-ico{font-size:38px;margin-bottom:14px;}
+.ob-title{font-size:24px;font-weight:900;margin-bottom:5px;letter-spacing:-.5px;}
+.ob-title em{font-style:normal;color:var(--neon);}
+.ob-sub{font-size:12px;color:var(--text2);font-family:var(--mono);margin-bottom:24px;line-height:1.6;}
+.ob-lbl{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-align:left;margin-bottom:7px;text-transform:uppercase;}
+.ob-inp{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;color:var(--text);padding:11px 14px;font-size:15px;font-family:var(--font);font-weight:600;outline:none;margin-bottom:14px;transition:border .2s;}
+.ob-inp:focus{border-color:var(--neon);}
+.ob-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+.rc{padding:13px 8px;border-radius:9px;border:2px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;text-align:center;}
+.rc:hover,.rc.sel{border-color:var(--neon);background:rgba(0,255,135,.05);}
+.rc-ico{font-size:22px;margin-bottom:5px;transition:filter .2s;filter:grayscale(1);}
+.rc.sel .rc-ico{filter:none;}
+.rc-nm{font-size:11px;font-weight:700;color:var(--text2);}
+.rc.sel .rc-nm{color:var(--neon);}
+.ob-btn{width:100%;padding:12px;border-radius:9px;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#07080f;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;}
+.ob-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,255,135,.3);}
+.ob-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.ob-resume{margin-top:12px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ob-resume a{color:var(--neon2);cursor:pointer;}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,8,15,.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.hdr-logo{display:flex;align-items:center;gap:9px;}
+.hdr-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--neon),var(--neon2));display:flex;align-items:center;justify-content:center;font-size:15px;}
+.hdr-txt{font-size:15px;font-weight:800;letter-spacing:-.3px;}
+.hdr-txt em{font-style:normal;color:var(--neon);}
+.hdr-nav{display:flex;gap:2px;}
+.hn{padding:6px 13px;border-radius:7px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap;}
+.hn:hover,.hn.active{background:var(--bg3);color:var(--neon);}
+.hdr-user{display:flex;align-items:center;gap:7px;padding:4px 11px 4px 4px;border-radius:18px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;transition:all .2s;}
+.hdr-user:hover{border-color:var(--neon);}
+.h-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+.h-un{font-size:12px;font-weight:700;}
+.h-pip{font-size:9px;padding:1px 5px;border-radius:8px;font-family:var(--mono);font-weight:600;}
+.ro .h-pip{background:rgba(0,255,135,.15);color:var(--neon);}
+.rf .h-pip{background:rgba(0,196,255,.12);color:var(--neon2);}
+
+/* MAIN */
+.main{position:relative;z-index:1;max-width:1260px;margin:0 auto;padding:22px 20px 60px;}
+
+/* VIEWS */
+.view{display:none;}
+.view.active{display:block;animation:fu .3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SQUAD VIEW ── */
+.squad-hero{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;}
+.squad-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon),var(--neon2),var(--neon4),transparent);}
+.sh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.sh-owner{display:flex;align-items:center;gap:12px;}
+.sh-av{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;border:2px solid rgba(0,255,135,.3);}
+.sh-name{font-size:20px;font-weight:900;letter-spacing:-.5px;margin-bottom:2px;}
+.sh-name span{color:var(--neon);}
+.sh-meta{font-size:11px;color:var(--text2);font-family:var(--mono);}
+.sh-stats{display:flex;gap:10px;flex-wrap:wrap;}
+.sh-stat{text-align:center;padding:9px 16px;background:var(--bg2);border-radius:9px;border:1px solid var(--border);}
+.sh-val{font-size:20px;font-weight:800;}
+.sh-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.5px;margin-top:1px;}
+.sh-prog{display:flex;align-items:center;gap:20px;padding-top:14px;border-top:1px solid var(--border);}
+.ring-w{position:relative;width:76px;height:76px;flex-shrink:0;}
+.ring-w svg{transform:rotate(-90deg);}
+.r-bg{fill:none;stroke:var(--border2);stroke-width:6;}
+.r-fg{fill:none;stroke:url(#rg);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1s ease;}
+.r-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.r-pct{font-size:15px;font-weight:800;color:var(--neon);}
+.r-sub{font-size:9px;color:var(--text3);font-family:var(--mono);}
+.phase-bars{flex:1;}
+.pb-row{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+.pb-nm{font-size:10px;color:var(--text2);font-family:var(--mono);width:170px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pb-tr{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.pb-fl{height:100%;border-radius:2px;transition:width .8s ease;}
+.pb-pc{font-size:9px;color:var(--text3);font-family:var(--mono);width:24px;text-align:right;}
+
+.sec-title{font-size:12px;font-weight:700;letter-spacing:1.2px;color:var(--text3);text-transform:uppercase;font-family:var(--mono);margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.sec-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--neon2);border-radius:2px;}
+.members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px;transition:all .2s;}
+.mc:hover{border-color:var(--neon2);transform:translateY(-1px);}
+.mc-top{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.mc-av{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;}
+.mc-nm{font-size:13px;font-weight:700;}
+.mc-rl{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.mc-pb{display:flex;align-items:center;gap:7px;}
+.mc-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.mc-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--neon2),var(--neon4));}
+.mc-pc{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+.act-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.feed-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.fd-av{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.fd-body{flex:1;}
+.fd-txt{font-size:12px;line-height:1.5;}
+.fd-txt strong{color:var(--neon);}
+.fd-tm{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.fd-reacts{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.react-btn{padding:2px 8px;border-radius:16px;border:1px solid var(--border2);background:var(--bg2);font-size:11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:3px;}
+.react-btn:hover,.react-btn.reacted{background:rgba(0,255,135,.07);border-color:rgba(0,255,135,.25);}
+.react-ct{font-size:10px;color:var(--text2);font-family:var(--mono);}
+
+/* ── ROADMAP ── */
+.rm-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.rm-title{font-size:20px;font-weight:900;letter-spacing:-.4px;}
+.rm-title span{color:var(--neon);}
+.flt-strip{display:flex;gap:5px;}
+.fb{padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--mono);}
+.fb:hover,.fb.active{background:var(--bg3);color:var(--neon);border-color:rgba(0,255,135,.25);}
+.ph-blk{margin-bottom:26px;}
+.ph-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);margin-bottom:11px;}
+.ph-num{width:24px;height:24px;border-radius:5px;font-size:10px;font-weight:800;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ph-nm{font-size:13px;font-weight:700;flex:1;}
+.ph-tag{font-size:9px;font-family:var(--mono);padding:2px 7px;border-radius:3px;font-weight:600;}
+.ph-mi{font-size:10px;font-family:var(--mono);color:var(--text3);}
+.tc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:9px;}
+.tc{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:13px;transition:all .2s;position:relative;overflow:hidden;}
+.tc:hover{border-color:var(--border2);box-shadow:0 4px 18px rgba(0,0,0,.35);}
+.tc.sd{border-left:3px solid var(--done);}
+.tc.si{border-left:3px solid var(--inprog);}
+.tc.sn{border-left:3px solid var(--bg3);}
+.tc-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:5px;}
+.tc-chk{width:17px;height:17px;border-radius:4px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;transition:all .2s;}
+.sd .tc-chk{background:var(--done);border-color:var(--done);color:#07080f;}
+.si .tc-chk{background:rgba(255,214,10,.2);border-color:var(--inprog);color:var(--inprog);}
+.tc-nm{font-size:12px;font-weight:700;flex:1;line-height:1.3;}
+.tc-ds{font-size:10px;color:var(--text3);font-family:var(--mono);line-height:1.5;margin-bottom:7px;}
+.tc-dr{font-size:10px;color:rgba(0,196,255,.6);font-family:var(--mono);padding:3px 7px;background:rgba(0,196,255,.04);border-radius:4px;border-left:2px solid rgba(0,196,255,.2);margin-bottom:7px;}
+.tc-ft{display:flex;align-items:center;justify-content:space-between;gap:5px;}
+.tc-tags{display:flex;gap:3px;flex-wrap:wrap;flex:1;}
+.ttag{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text3);font-family:var(--mono);border:1px solid var(--border);}
+.tc-acts{display:flex;gap:3px;flex-shrink:0;}
+.ta{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;font-size:9px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--mono);white-space:nowrap;}
+.ta:hover{background:var(--bg3);}
+.ta.q{color:var(--neon2);border-color:rgba(0,196,255,.2);}
+.ta.q:hover{background:rgba(0,196,255,.06);}
+.ta.d{color:var(--done);border-color:rgba(0,255,135,.2);}
+.ta.d:hover{background:rgba(0,255,135,.06);}
+.ta.p{color:var(--inprog);border-color:rgba(255,214,10,.2);}
+.ta.p:hover{background:rgba(255,214,10,.06);}
+.ta.r{color:var(--text3);}
+.drone-sm{position:absolute;top:6px;right:6px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(0,196,255,.05);color:rgba(0,196,255,.5);border:1px solid rgba(0,196,255,.1);font-family:var(--mono);}
+
+/* ── QUIZ ── */
+.qwrap{max-width:680px;margin:0 auto;}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;margin-bottom:14px;}
+.q-hdr-bar{display:flex;align-items:center;gap:9px;margin-bottom:18px;}
+.bk{padding:6px 13px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s;}
+.bk:hover{border-color:var(--neon);color:var(--neon);}
+.q-topicnm{font-size:15px;font-weight:800;flex:1;}
+.q-topicnm span{color:var(--neon2);}
+.qpr{display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+.qpr-l{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.qpr-b{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.qpr-f{height:100%;background:linear-gradient(90deg,var(--neon),var(--neon2));border-radius:2px;transition:width .4s;}
+.qpr-s{font-size:10px;color:var(--done);font-family:var(--mono);}
+.qctx{font-size:10px;font-family:var(--mono);color:var(--text2);background:var(--bg3);padding:7px 10px;border-radius:5px;margin-bottom:10px;border-left:3px solid var(--border2);}
+.qtxt{font-size:14px;font-weight:700;line-height:1.55;margin-bottom:14px;}
+.opts{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.opt{padding:10px 13px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);text-align:left;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:500;transition:all .2s;}
+.opt:hover:not(:disabled){border-color:var(--neon2);background:rgba(0,196,255,.05);}
+.opt.sel{border-color:var(--neon2);background:rgba(0,196,255,.07);color:var(--neon2);}
+.opt.ok{border-color:var(--done)!important;background:rgba(0,255,135,.06)!important;color:var(--done)!important;}
+.opt.bad{border-color:#ff4d6d!important;background:rgba(255,77,109,.06)!important;color:#ff4d6d!important;}
+.opt:disabled{cursor:default;}
+.oa{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;color:var(--text);padding:9px 11px;font-size:12px;font-family:var(--mono);resize:vertical;min-height:68px;outline:none;transition:border .2s;}
+.oa:focus{border-color:var(--neon2);}
+.qa{display:flex;gap:7px;margin-bottom:12px;}
+.qs{padding:8px 20px;border-radius:7px;background:var(--neon2);color:#07080f;font-weight:800;font-size:11px;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;}
+.qs:hover{background:#33d4ff;}
+.qs:disabled{opacity:.35;cursor:not-allowed;}
+.qn{padding:8px 20px;border-radius:7px;background:var(--bg3);color:var(--text2);font-weight:700;font-size:11px;border:1px solid var(--border2);cursor:pointer;font-family:var(--font);transition:all .2s;}
+.qn:hover{border-color:var(--neon);color:var(--neon);}
+.fb-box{padding:11px;border-radius:7px;font-size:11px;line-height:1.6;font-family:var(--mono);}
+.fb-box.ok{background:rgba(0,255,135,.05);border:1px solid rgba(0,255,135,.14);color:#86efac;}
+.fb-box.bad{background:rgba(255,77,109,.05);border:1px solid rgba(255,77,109,.14);color:#fca5a5;}
+.fb-box.par{background:rgba(255,214,10,.05);border:1px solid rgba(255,214,10,.14);color:#fde68a;}
+.fb-lbl{font-weight:700;margin-bottom:3px;}
+.qi-idle{text-align:center;padding:14px 0;}
+.qi-ico{font-size:40px;margin-bottom:12px;}
+.qi-ttl{font-size:16px;font-weight:800;margin-bottom:5px;}
+.qi-sub{font-size:11px;color:var(--text2);font-family:var(--mono);line-height:1.7;margin-bottom:20px;}
+.sq{display:inline-block;padding:10px 26px;border-radius:9px;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#07080f;font-size:12px;font-weight:800;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;box-shadow:0 4px 20px rgba(0,255,135,.22);}
+.sq:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,255,135,.32);}
+.sq:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--neon2);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-msg{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.res-wrap{text-align:center;}
+.res-g{font-size:40px;margin-bottom:9px;}
+.res-ring{width:100px;height:100px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:5px solid;}
+.res-big{font-size:26px;font-weight:800;}
+.res-sl{font-size:9px;font-family:var(--mono);color:var(--text3);}
+.res-ttl{font-size:16px;font-weight:800;margin-bottom:5px;}
+.res-sub{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:18px;}
+.res-bk{background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:16px;text-align:left;}
+.res-bk-r{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.res-bk-r:last-child{border:none;}
+.res-bk-l{color:var(--text3);font-family:var(--mono);}
+.res-acts{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;}
+.ra{padding:8px 16px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--font);transition:all .2s;}
+.ra:hover{border-color:var(--neon);color:var(--neon);}
+.ra.pri{background:var(--neon);color:#07080f;border-color:var(--neon);}
+.ra.pri:hover{background:#33ff9f;}
+.qhub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:7px;margin-top:5px;}
+.qhi{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:10px;cursor:pointer;transition:all .2s;}
+.qhi:hover{border-color:var(--neon2);}
+.qhi-s{font-size:10px;font-family:var(--mono);margin-bottom:4px;}
+.qhi-n{font-size:11px;font-weight:700;}
+.qhi-b{font-size:10px;font-family:var(--mono);color:var(--neon);margin-top:3px;}
+
+/* ── CHEERS ── */
+.cheer-strip{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.cp{padding:5px 13px;border-radius:18px;border:1px solid var(--border2);background:var(--bg2);font-size:13px;cursor:pointer;transition:all .2s;}
+.cp:hover{background:var(--bg3);border-color:var(--neon);transform:scale(1.12);}
+.cm-box{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:13px;margin-bottom:13px;}
+.cm-row{display:flex;gap:7px;}
+.cm-in{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 11px;font-size:13px;font-family:var(--font);outline:none;transition:border .2s;}
+.cm-in:focus{border-color:var(--neon2);}
+.cm-snd{padding:8px 16px;border-radius:6px;background:var(--neon2);color:#07080f;font-size:11px;font-weight:800;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap;}
+.cm-snd:hover{background:#33d4ff;}
+.cm-list{display:flex;flex-direction:column;gap:7px;}
+.cm-item{display:flex;align-items:flex-start;gap:7px;padding:8px 9px;background:var(--bg2);border-radius:7px;border:1px solid var(--border);animation:fu .2s ease;}
+.cm-av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.cm-b{flex:1;}
+.cm-nm{font-size:10px;font-weight:700;color:var(--neon2);font-family:var(--mono);}
+.cm-tx{font-size:12px;line-height:1.4;margin-top:1px;}
+.cm-tm{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.cm-empty{font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:20px;}
+
+/* ── CHALLENGES ── */
+.ch-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px;}
+.ch-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ch-ttl{font-size:14px;font-weight:800;}
+.ch-badge{font-size:9px;padding:2px 8px;border-radius:8px;font-family:var(--mono);font-weight:600;}
+.ch-badge.op{background:rgba(255,107,53,.12);color:var(--neon3);border:1px solid rgba(255,107,53,.2);}
+.ch-badge.dn{background:rgba(0,255,135,.1);color:var(--done);border:1px solid rgba(0,255,135,.2);}
+.ch-from{font-size:11px;color:var(--text2);margin-bottom:7px;font-family:var(--mono);}
+.ch-topic{font-size:12px;font-weight:700;color:var(--neon2);margin-bottom:10px;}
+.ch-scores{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.ch-chip{padding:5px 10px;border-radius:7px;background:var(--bg2);border:1px solid var(--border);font-size:11px;font-family:var(--mono);}
+.ch-acts{display:flex;gap:7px;}
+.ch-btn{padding:7px 16px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all .2s;}
+.ch-btn:hover{border-color:var(--neon);color:var(--neon);}
+.ch-btn.acc{background:var(--neon3);color:white;border-color:var(--neon3);}
+.ch-btn.acc:hover{background:#ff8555;}
+.sc-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.sc-ttl{font-size:13px;font-weight:800;margin-bottom:12px;}
+.sc-sel{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;color:var(--text);padding:9px 11px;font-size:12px;font-family:var(--font);outline:none;margin-bottom:9px;cursor:pointer;}
+.sc-sel:focus{border-color:var(--neon2);}
+.sc-send{padding:8px 20px;border-radius:7px;background:linear-gradient(135deg,var(--neon3),var(--neon4));color:white;font-size:12px;font-weight:800;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;}
+.sc-send:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(255,107,53,.28);}
+
+/* MISC */
+.toast{position:fixed;bottom:18px;right:18px;padding:10px 16px;border-radius:9px;font-size:11px;font-weight:700;z-index:9999;transform:translateY(55px);opacity:0;transition:all .3s;font-family:var(--mono);box-shadow:0 8px 28px rgba(0,0,0,.6);}
+.toast.show{transform:translateY(0);opacity:1;}
+.ts{background:rgba(0,255,135,.9);color:#07080f;}
+.ti{background:rgba(0,196,255,.9);color:#07080f;}
+.te{background:rgba(255,77,109,.9);color:white;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--neon);}
+@media(max-width:768px){
+  .sh-top{flex-direction:column;}
+  .sh-stats{flex-wrap:wrap;}
+  .sh-prog{flex-direction:column;align-items:flex-start;}
+  .phase-bars{width:100%;}
+  .pb-nm{width:110px;}
+  .hdr-nav{display:none;}
+  .members-grid,.tc-grid,.qhub-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body class="bg-background-dark font-display text-slate-100 min-h-screen flex flex-col">
+
+<!-- ONBOARDING -->
+<div id="ob">
+  <div class="ob-box">
+    <div class="ob-ico">🤖</div>
+    <div class="ob-title">ROS2 <em>Squad</em></div>
+    <div class="ob-sub">Track · Share · Learn Together<br>Join Rohit's ROS2 learning journey</div>
+    
+    <div class="ob-lbl" style="margin-top:2px;">Join as</div>
+    <div class="ob-row">
+      <div class="rc" id="rc-o" onclick="selRole('owner')"><div class="rc-ico">👑</div><div class="rc-nm">Owner (Rohit)</div></div>
+      <div class="rc sel" id="rc-f" onclick="selRole('friend')"><div class="rc-ico">🤝</div><div class="rc-nm">Friend / Viewer</div></div>
+    </div>
+
+    <div id="friend-input-area">
+      <div class="ob-lbl">Your Username</div>
+      <input class="ob-inp" id="ob-nm" placeholder="e.g. Arjun, Dev, Priya…" maxlength="20" oninput="obChk()">
+    </div>
+
+    <div id="owner-input-area" style="display:none;">
+      <div class="ob-lbl">Owner Email</div>
+      <input type="email" class="ob-inp" id="ob-email" placeholder="rohit@example.com" oninput="obChk()">
+      <div class="ob-lbl">Password</div>
+      <input type="password" class="ob-inp" id="ob-pwd" placeholder="••••••••" oninput="obChk()">
+    </div>
+
+    <button class="ob-btn" id="ob-go" onclick="doOb()" disabled>Enter the Squad →</button>
+    <div class="ob-resume" id="ob-res"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr" id="app-hdr" style="display:none;">
+    <div class="hdr-logo">
+        <div class="hdr-mark"><span class="material-symbols-outlined" style="font-size:18px; color: #07080f;">rocket_launch</span></div>
+        <div class="hdr-txt">ROS2 <em>Squad</em></div>
+          <nav class="flex items-center gap-1">
+              <button class="hn px-5 py-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all active" onclick="gv('squad')">Squad</button>
+              <button class="hn px-5 py-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all" id="nav-rm" onclick="gv('roadmap')">Roadmap</button>
+              <button class="hn px-5 py-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all" onclick="gv('quiz')">Quizzes</button>
+              <button class="hn hn-int px-5 py-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all" onclick="gv('cheers')">Cheers</button>
+              <button class="hn hn-int px-5 py-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all" onclick="gv('challenge')">Challenges</button>
+          </nav>
+      </div>
+      <div class="flex items-center gap-6">
+          <button id="export-json-btn" class="hidden items-center gap-2 rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-1.5 text-xs font-mono text-slate-400 hover:text-white hover:border-slate-500 transition-colors" onclick="exportPhasesJson()"><span class="material-symbols-outlined text-[14px]">download</span> Export JSON</button>
+          <div class="flex items-center gap-3 pl-6 border-l border-primary/10 cursor-pointer hover:bg-white/5 rounded-lg px-3 py-1.5 transition-colors" id="h-uc" onclick="openSettings()">
+        <div style="text-align:right;">
+            <div id="h-un" class="h-un">User</div>
+            <div id="h-pip" class="h-pip">FRIEND</div>
+        </div>
+        <div class="h-av" id="h-av">🤖</div>
+    </div>
+</header>
+
+<!-- MOBILE NAV -->
+<nav class="fixed bottom-0 left-0 w-full bg-[#07080f]/95 backdrop-blur-xl border-t border-[#222840] px-4 py-3 flex justify-around items-center z-50 md:hidden" id="mobile-nav" style="display:none;">
+  <button class="flex flex-col items-center gap-1 group hn active" onclick="gv('squad')" style="background:transparent; padding:0;">
+      <span class="material-symbols-outlined font-light transition-all text-[#8892b0] group-[.active]:text-[#00ff87] group-[.active]:drop-shadow-[0_0_8px_rgba(0,255,135,0.6)]" style="font-size:24px;">group</span>
+      <span class="text-[9px] font-bold tracking-widest uppercase font-mono text-[#8892b0] group-[.active]:text-[#00ff87]">Squad</span>
+  </button>
+  <button class="flex flex-col items-center gap-1 group hn" id="nav-rm-mobile" onclick="gv('roadmap')" style="background:transparent; padding:0;">
+      <span class="material-symbols-outlined font-light transition-all text-[#8892b0] group-[.active]:text-[#00ff87] group-[.active]:drop-shadow-[0_0_8px_rgba(0,255,135,0.6)]" style="font-size:24px;">map</span>
+      <span class="text-[9px] font-bold tracking-widest uppercase font-mono text-[#8892b0] group-[.active]:text-[#00ff87]">Roadmap</span>
+  </button>
+  <div class="relative -top-5 hn-int">
+      <button class="size-14 bg-gradient-to-r from-[#00ff87] to-[#00c4ff] rounded-full flex items-center justify-center text-[#07080f] shadow-[0_4px_20px_rgba(0,255,135,0.3)] hover:scale-105 active:scale-95 transition-all hn group p-0 m-0 border-4 border-[#07080f]" onclick="gv('quiz')">
+          <span class="material-symbols-outlined text-[28px] font-bold">quiz</span>
+      </button>
+  </div>
+  <button class="flex flex-col items-center gap-1 group hn hn-int" onclick="gv('cheers')" style="background:transparent; padding:0;">
+      <span class="material-symbols-outlined font-light transition-all text-[#8892b0] group-[.active]:text-[#00ff87] group-[.active]:drop-shadow-[0_0_8px_rgba(0,255,135,0.6)]" style="font-size:24px;">celebration</span>
+      <span class="text-[9px] font-bold tracking-widest uppercase font-mono text-[#8892b0] group-[.active]:text-[#00ff87]">Cheers</span>
+  </button>
+  <button class="flex flex-col items-center gap-1 group hn hn-int" onclick="gv('challenge')" style="background:transparent; padding:0;">
+      <span class="material-symbols-outlined font-light transition-all text-[#8892b0] group-[.active]:text-[#00ff87] group-[.active]:drop-shadow-[0_0_8px_rgba(0,255,135,0.6)]" style="font-size:24px;">bolt</span>
+      <span class="text-[9px] font-bold tracking-widest uppercase font-mono text-[#8892b0] group-[.active]:text-[#00ff87]">Quests</span>
+  </button>
+</nav>
+
+<style>
+.hn.active { color: var(--neon)!important; background: rgba(0,255,135,0.05)!important; }
+</style>
+
+<div class="main flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8 relative z-10 pt-8 pb-32 md:pb-8" id="app-main" style="display:none;">
+
+  <!-- SQUAD -->
+  <div class="view active focus-in" id="view-squad">
+    <div id="squad-hero"></div>
+    <div class="flex flex-col lg:flex-row gap-8 mb-4 max-w-full overflow-hidden" id="squad-mid">
+      <div class="flex-1 min-w-0">
+        <div class="text-xl font-bold flex items-center gap-2 mb-6 text-slate-100">
+            <span class="material-symbols-outlined text-primary">group</span> Squad Members
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="members-grid"></div>
+      </div>
+      <div class="w-full lg:w-[380px] shrink-0 glass-panel rounded-3xl p-6 border border-primary/10 relative">
+        <div class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-100">
+            <span class="material-symbols-outlined text-secondary">sensors</span> Live Activity
+        </div>
+        <div id="act-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="view" id="view-roadmap">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      <div class="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">map</span> ROS2 <span class="text-primary">Roadmap</span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0 custom-scrollbar">
+        <button class="fb active px-4 py-2 rounded-lg border border-primary/30 bg-slate-800 text-primary text-xs font-semibold cursor-pointer transition-all font-mono whitespace-nowrap" onclick="rmFlt('all',this)">All</button>
+        <button class="fb px-4 py-2 rounded-lg border border-slate-700 bg-transparent text-slate-400 hover:bg-slate-800 hover:text-primary hover:border-primary/30 text-xs font-semibold cursor-pointer transition-all font-mono whitespace-nowrap" onclick="rmFlt('none',this)">Not Started</button>
+        <button class="fb px-4 py-2 rounded-lg border border-slate-700 bg-transparent text-slate-400 hover:bg-slate-800 hover:text-primary hover:border-primary/30 text-xs font-semibold cursor-pointer transition-all font-mono whitespace-nowrap" onclick="rmFlt('inprog',this)">In Progress</button>
+        <button class="fb px-4 py-2 rounded-lg border border-slate-700 bg-transparent text-slate-400 hover:bg-slate-800 hover:text-primary hover:border-primary/30 text-xs font-semibold cursor-pointer transition-all font-mono whitespace-nowrap" onclick="rmFlt('done',this)">Done</button>
+      </div>
+    </div>
+    <div id="rm-body"></div>
+  </div>
+
+  <!-- QUIZZES -->
+  <div class="view" id="view-quiz">
+    <div class="max-w-4xl mx-auto pb-10 pt-2 lg:pt-6" id="q-hub"></div>
+    <div class="max-w-3xl mx-auto pb-10 pt-2 lg:pt-6" style="display:none;" id="q-run"></div>
+  </div>
+
+  <!-- CHEERS -->
+  <div class="view" id="view-cheers">
+    <div class="max-w-2xl mx-auto pb-10 pt-2 lg:pt-6">
+      <div class="mb-6 flex items-center gap-2 text-2xl font-bold text-slate-100">
+          <span class="material-symbols-outlined text-secondary">celebration</span> Squad <span class="text-secondary">Cheers</span>
+      </div>
+      <div class="glass-panel mb-8 rounded-2xl border border-secondary/20 p-5 shadow-lg md:p-6">
+        <div class="mb-3 text-[10px] font-mono uppercase tracking-wider text-slate-400">React with emoji</div>
+        <div class="mb-6 flex flex-wrap gap-2.5">
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('🔥')">🔥</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('🚀')">🚀</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('💪')">💪</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('🤖')">🤖</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('⭐')">⭐</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('🎯')">🎯</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('👏')">👏</button>
+          <button class="size-11 flex items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-xl transition-all hover:scale-110 hover:border-secondary hover:bg-secondary/20" onclick="sendCheer('🏆')">🏆</button>
+        </div>
+        <div class="mb-2 mt-2 text-[10px] font-mono uppercase tracking-wider text-slate-400">Leave a message</div>
+        <div class="flex gap-3">
+          <input class="flex-1 rounded-xl border border-slate-700 bg-background-dark px-4 py-3 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all focus:border-secondary focus:ring-1 focus:ring-secondary" id="cm-inp" placeholder="Write something encouraging…" maxlength="200" onkeydown="if(event.key==='Enter')sendComment()">
+          <button class="px-6 py-3 rounded-xl bg-secondary text-sm font-bold tracking-wide text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-colors hover:bg-purple-400" onclick="sendComment()">Send</button>
+        </div>
+      </div>
+      <div id="cm-list-el"></div>
+    </div>
+  </div>
+
+  <!-- CHALLENGES -->
+  <div class="view" id="view-challenge">
+    <div class="max-w-2xl mx-auto pb-10 pt-2 lg:pt-6">
+      <div class="mb-6 flex items-center gap-2 text-2xl font-bold text-slate-100">
+          <span class="material-symbols-outlined text-orange-400">bolt</span> Squad <span class="text-orange-400">Challenges</span>
+      </div>
+      <div id="in-ch"></div>
+      <div class="glass-panel relative mt-6 mb-8 overflow-hidden rounded-2xl border border-orange-500/20 p-5 shadow-lg md:p-6">
+        <div class="absolute -mt-16 -mr-16 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl pointer-events-none top-0 right-0"></div>
+        <div class="relative z-10 mb-1 flex items-center gap-2 text-lg font-bold text-slate-100">🎯 Challenge a Friend</div>
+        <div class="relative z-10 mb-6 text-xs font-mono text-slate-400">Pick a topic and challenge someone to beat your score!</div>
+        <div class="relative z-10 flex flex-col gap-3">
+            <select class="w-full appearance-none rounded-xl border border-slate-700 bg-background-dark px-4 py-3 text-sm text-slate-100 outline-none transition-all focus:border-orange-500 focus:ring-1 focus:ring-orange-500" id="ch-t-sel"></select>
+            <select class="w-full appearance-none rounded-xl border border-slate-700 bg-background-dark px-4 py-3 text-sm text-slate-100 outline-none transition-all focus:border-orange-500 focus:ring-1 focus:ring-orange-500" id="ch-u-sel"><option value="">Challenge who?</option></select>
+            <button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-sm font-bold tracking-wide text-white shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-colors hover:from-orange-400 hover:to-amber-400" onclick="sendChallenge()">Send Challenge ⚡</button>
+        </div>
+      </div>
+      <div id="all-ch"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ff87"/>
+      <stop offset="100%" style="stop-color:#00c4ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<script src="env.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: window.ENV.FIREBASE_API_KEY,
+    authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
+    databaseURL: window.ENV.FIREBASE_DATABASE_URL,
+    projectId: window.ENV.FIREBASE_PROJECT_ID,
+    storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
+    appId: window.ENV.FIREBASE_APP_ID,
+    measurementId: window.ENV.FIREBASE_MEASUREMENT_ID
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+  window.firebaseAuth = auth;
+  window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+  window.firebaseSignOut = signOut;
+
+  window.firebaseDbGet = async (k) => {
+    try {
+      const snapshot = await get(child(ref(db), k));
+      return snapshot.exists() ? snapshot.val() : null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  window.firebaseDbSet = async (k, v) => {
+    try {
+      await set(ref(db, k), v);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  
+  window.firebaseReady = true;
+</script>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+let PHASES = [];
+const DEFAULT_PHASES=[
+  {id:'ph1',num:'01',name:'Foundations & Setup',tag:'BEGINNER',color:'neon',hex:'#00ff87',topics:[
+    {id:'t1',name:'ROS2 Installation & Setup',desc:'Install ROS2 Humble/Iron, colcon workspace, environment sourcing',tags:['ubuntu','colcon'],drone:true,dn:'Same env for px4_ros_com bridge'},
+    {id:'t2',name:'Nodes, Topics & Services',desc:'Core ROS2 communication: pub/sub, service server/client',tags:['rclpy','rclcpp'],drone:true},
+    {id:'t3',name:'Publishers & Subscribers',desc:'Custom pub/sub in Python & C++, QoS profiles, message types',tags:['python','c++','qos']},
+    {id:'t4',name:'Launch Files & Parameters',desc:'XML/Python launch files, param servers, yaml configs',tags:['launch','params','yaml']},
+    {id:'t5',name:'ROS2 CLI & Introspection',desc:'ros2 topic/node/service/bag, rqt debugging tools',tags:['CLI','rqt','rosbag']},
+    {id:'t6',name:'Packages & Workspaces',desc:'colcon build, ament_cmake/python, package.xml, CMakeLists',tags:['colcon','ament']},
+  ]},
+  {id:'ph2',num:'02',name:'Core Communication',tag:'BEG–INTER',color:'neon2',hex:'#00c4ff',topics:[
+    {id:'t7',name:'Custom Messages & Services',desc:'Define .msg/.srv/.action files, build custom interfaces',tags:['interfaces','msg','srv']},
+    {id:'t8',name:'Actions (actionlib)',desc:'Long-running tasks with feedback — ActionServer, ActionClient',tags:['action','async'],drone:true,dn:'For arming, takeoff & mission flows'},
+    {id:'t9',name:'TF2 — Transforms',desc:'Coordinate frame transforms, static transforms',tags:['tf2','frames'],drone:true,dn:'world→base_link→sensors chain'},
+    {id:'t10',name:'ROS2 Bag (rosbag2)',desc:'Recording, playback & analysis of sensor data streams',tags:['rosbag2','sqlite']},
+    {id:'t11',name:'QoS Policies',desc:'Reliability, durability, history, liveliness for real-time',tags:['qos','real-time','dds']},
+    {id:'t12',name:'Lifecycle Nodes',desc:'Managed node state machine: unconfigured→inactive→active',tags:['lifecycle']},
+  ]},
+  {id:'ph3',num:'03',name:'Simulation & Visualization',tag:'INTERMEDIATE',color:'neon4',hex:'#a855f7',topics:[
+    {id:'t13',name:'RViz2',desc:'3D visualization of robot state, sensors, transforms',tags:['rviz2','3D'],drone:true},
+    {id:'t14',name:'Gazebo Classic / Ignition',desc:'Physics simulation, SDF models, world files, plugins',tags:['gazebo','SDF'],drone:true,dn:'PX4-Gazebo SITL — simulate before flying'},
+    {id:'t15',name:'URDF & Robot Modeling',desc:'Links, joints, visual/collision geometry for robot structure',tags:['URDF','xacro'],drone:true,dn:'Model your hexacopter for simulation'},
+    {id:'t16',name:'ros2_control Framework',desc:'Hardware abstraction, controllers, state/command interfaces',tags:['ros2_control']},
+    {id:'t17',name:'Sensor Integration',desc:'Camera, IMU, LIDAR, GPS — reading sensor data in ROS2',tags:['sensors','IMU','LIDAR'],drone:true,dn:'Connect Pixhawk telemetry, GPS to ROS2'},
+  ]},
+  {id:'ph4',num:'04',name:'Navigation & Autonomy',tag:'INTER–ADVANCED',color:'neon5',hex:'#ffd60a',topics:[
+    {id:'t18',name:'Nav2 Stack Overview',desc:'Navigation2: BT Navigator, planners, controllers, costmaps',tags:['nav2','BT'],drone:true},
+    {id:'t19',name:'SLAM — Mapping',desc:'slam_toolbox, cartographer — SLAM for robotics',tags:['SLAM','mapping']},
+    {id:'t20',name:'Path Planning (Nav2)',desc:'NavFn, Smac planners, DWB/TEB controllers, Costmap2D',tags:['planning','A*']},
+    {id:'t21',name:'Behavior Trees (BT)',desc:'BehaviorTree.CPP, bt_navigator, decision logic with BTs',tags:['BT','decision']},
+    {id:'t22',name:'MAVROS / px4_ros_com',desc:'Bridge between ROS2 and MAVLink autopilots (Pixhawk)',tags:['MAVROS','PX4','MAVLink'],drone:true,dn:'Key drone bridge — offboard, missions, telemetry'},
+    {id:'t23',name:'Offboard Control (Drones)',desc:'OFFBOARD mode, position/velocity/attitude setpoints',tags:['offboard'],drone:true,dn:'Directly applies your ArduPilot experience'},
+    {id:'t24',name:'GPS & Localization',desc:'robot_localization, EKF/UKF sensor fusion, GPS+IMU',tags:['EKF','GPS'],drone:true},
+  ]},
+  {id:'ph5',num:'05',name:'Advanced & Specialized',tag:'ADVANCED',color:'neon3',hex:'#ff6b35',topics:[
+    {id:'t25',name:'MoveIt2 — Manipulation',desc:'Motion planning: OMPL, kinematics, collision avoidance',tags:['MoveIt2','arm']},
+    {id:'t26',name:'ROS2 Security (SROS2)',desc:'DDS security, certificates, node authentication',tags:['SROS2','security']},
+    {id:'t27',name:'Multi-Robot Systems',desc:'Namespacing, multi-agent coordination, swarm patterns',tags:['swarm'],drone:true,dn:'Swarm drone formations — multiple Pixhawks'},
+    {id:'t28',name:'Micro-ROS (Embedded)',desc:'ROS2 on ESP32/Arduino, micro-XRCE-DDS agent',tags:['microROS','ESP32'],drone:true,dn:'Your Arduino background applies here!'},
+    {id:'t29',name:'ROS2 with Docker',desc:'Containerizing ROS2, docker-compose multi-node setups',tags:['docker']},
+    {id:'t30',name:'Performance & Real-Time',desc:'Real-time executors, DDS tuning, cbg_executor',tags:['real-time','RTOS']},
+    {id:'t31',name:'Computer Vision + ROS2',desc:'image_transport, cv_bridge, detection pipelines',tags:['opencv','vision'],drone:true,dn:'Obstacle detection, landing pad recognition'},
+    {id:'t32',name:'ROS2 on Raspberry Pi',desc:'Cross-compiling, ARM optimization, companion computer setup',tags:['RPi','ARM'],drone:true,dn:'Your RPi expertise — companion for Pixhawk!'},
+  ]},
+];
+const AT=()=>PHASES.flatMap(p=>p.topics);
+
+// ═══════════════════════════════════════
+// STORAGE HELPERS (Firebase & Local)
+// ═══════════════════════════════════════
+async function sg(k,sh=true){
+  try{
+    while(!window.firebaseReady) await new Promise(r=>setTimeout(r,50));
+    return await window.firebaseDbGet(k);
+  }catch{return null;}
+}
+async function ss(k,v,sh=true){
+  try{
+    // Friends can't modify Rohit's progress, but they CAN join the squad, comment, and challenge!
+    if (k === 'op' && ME?.role !== 'owner') {
+      console.warn("Friends cannot modify Owner Progress.");
+      return;
+    }
+    while(!window.firebaseReady) await new Promise(r=>setTimeout(r,50));
+    await window.firebaseDbSet(k, v);
+  }catch(e){console.error(e);}
+}
+async function ug(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null;}catch{return null;}}
+async function us(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.error(e);}
+}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let ME=null;
+let OP={};       // owner progress: topicId->status
+let MEMBERS=[];
+let ACTIVITY=[];
+let COMMENTS=[];
+let CHALLENGES=[];
+let GLOB_Q={};      // global quizzes: topicId->[ { cQ object containing qs, ans, sc, total } ]
+let rmF='all';
+let cQ=null;     // current Quiz state
+
+const COLS=['#00ff87','#00c4ff','#a855f7','#ff6b35','#ffd60a','#f43f5e','#22d3ee','#84cc16'];
+const EMJS=['🤖','🚀','⚡','🔧','🛸','🎯','💡','🔬','🌐','🦾'];
+function clr(n){return COLS[Math.abs([...n].reduce((a,c)=>a+c.charCodeAt(0),0))%COLS.length];}
+function emj(n){return EMJS[Math.abs([...n].reduce((a,c)=>a+c.charCodeAt(0),0))%EMJS.length];}
+function rt(ts){const d=Date.now()-ts;if(d<60000)return'just now';if(d<3600000)return Math.floor(d/60000)+'m ago';if(d<86400000)return Math.floor(d/3600000)+'h ago';return Math.floor(d/86400000)+'d ago';}
+
+// ═══════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════
+let obRole='friend';
+function selRole(r) {
+  obRole=r;
+  document.getElementById('rc-o').classList.toggle('sel',r==='owner');
+  document.getElementById('rc-f').classList.toggle('sel',r==='friend');
+  
+  if (r === 'owner') {
+    document.getElementById('friend-input-area').style.display = 'none';
+    document.getElementById('owner-input-area').style.display = 'block';
+    obChk();
+    document.getElementById('ob-go').innerText = 'Enter as Rohit →';
+  } else {
+    document.getElementById('friend-input-area').style.display = 'block';
+    document.getElementById('owner-input-area').style.display = 'none';
+    obChk();
+    document.getElementById('ob-go').innerText = 'Enter the Squad →';
+  }
+}
+function obChk(){
+  if (obRole === 'friend') {
+    document.getElementById('ob-go').disabled=!document.getElementById('ob-nm').value.trim();
+  } else {
+    document.getElementById('ob-go').disabled=!(document.getElementById('ob-email').value.trim() && document.getElementById('ob-pwd').value.trim());
+  }
+}
+async function doOb(){
+  let n = 'Rohit';
+  if (obRole === 'friend') {
+    n = document.getElementById('ob-nm').value.trim();
+    if(!n) return;
+  } else if (obRole === 'owner') {
+    const email = document.getElementById('ob-email').value.trim();
+    const pwd = document.getElementById('ob-pwd').value.trim();
+    try {
+      const btn = document.getElementById('ob-go');
+      const oldTxt = btn.innerText;
+      btn.innerText = 'Authenticating...';
+      btn.disabled = true;
+      await window.signInWithEmailAndPassword(window.firebaseAuth, email, pwd);
+      btn.innerText = oldTxt;
+      btn.disabled = false;
+    } catch (e) {
+      alert("Authentication failed: " + e.message);
+      document.getElementById('ob-go').innerText = 'Enter as Rohit →';
+      document.getElementById('ob-go').disabled = false;
+      return;
+    }
+  }
+  
+  ME={name:n,role:obRole,color:clr(n),emoji:emj(n)};
+  await us('me',ME);await boot();
+}
+async function resume(){const s=await ug('me');if(s){ME=s;await boot();}}
+
+// ═══════════════════════════════════════
+// USER SETTINGS & LOGOUT
+// ═══════════════════════════════════════
+function openSettings() {
+  const sm = document.getElementById('settings-modal');
+  if(!sm){
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="settings-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4" style="display:flex">
+        <div class="glass-panel w-full max-w-[320px] rounded-2xl border border-primary/20 p-8 text-center bg-background-dark shadow-2xl relative">
+          <button class="absolute top-4 right-4 text-slate-500 hover:text-white" onclick="document.getElementById('settings-modal').style.display='none'"><span class="material-symbols-outlined">close</span></button>
+          
+          <div class="size-20 mx-auto rounded-2xl mb-4 flex items-center justify-center text-4xl shadow-inner border" style="background:${ME.color}15; border-color:${ME.color}30; box-shadow: inset 0 0 20px ${ME.color}22;">${ME.emoji}</div>
+          <h3 class="mb-1 text-2xl font-bold text-white tracking-tight" style="color: ${ME.color}; text-shadow: 0 0 15px ${ME.color}44;">${ME.name}</h3>
+          <p class="text-[10px] font-mono font-bold text-slate-400 mb-8 uppercase tracking-widest">${ME.role}</p>
+          
+          <div class="space-y-3">
+            <button class="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800 border border-slate-700 px-6 py-3.5 text-sm font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition-all hover:-translate-y-0.5" onclick="logout()">
+                <span class="material-symbols-outlined text-lg">logout</span> Logout device
+            </button>
+            <button class="group w-full flex items-center justify-center gap-2 rounded-xl bg-red-500/10 border border-red-500/30 px-6 py-3.5 text-sm font-bold text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all shadow-[0_0_15px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:-translate-y-0.5" onclick="deleteRecords()">
+                <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">delete_forever</span> Delete My Records
+            </button>
+          </div>
+        </div>
+      </div>
+    `);
+  } else {
+    sm.style.display='flex';
+  }
+}
+
+async function logout() {
+  await us('me', null);
+  if (window.firebaseSignOut && window.firebaseAuth) {
+    try { await window.firebaseSignOut(window.firebaseAuth); } catch(e){}
+  }
+  location.reload();
+}
+
+async function deleteRecords() {
+  if(!confirm('Are you absolutely sure you want to delete your records? This will erase your data from the squad entirely and cannot be undone.')) return;
+  
+  MEMBERS = MEMBERS.filter(m => m.name !== ME.name);
+  await ss('members', MEMBERS);
+  
+  if(ME.role === 'owner') {
+    await ss('op', {});
+    await addAct('del', ME.name, `The Owner <strong style="color:${ME.color}">${ME.name}</strong> deleted their records! 🧨`);
+  } else {
+    await addAct('del', ME.name, `<strong style="color:${ME.color}">${ME.name}</strong> deleted their account and left the squad. ✌️`);
+  }
+  
+  await us('me', null);
+  location.reload();
+}
+
+function exportPhasesJson() {
+  const exportPayload = { phases: DEFAULT_PHASES };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+  const dlAnchorElem = document.createElement('a');
+  dlAnchorElem.setAttribute("href",     dataStr     );
+  dlAnchorElem.setAttribute("download", "ros2_squad_phases.json");
+  dlAnchorElem.click();
+}
+
+async function checkRes(){
+  const s=await ug('me');
+  if(s){
+    ME=s;
+    await boot();
+  }
+}
+checkRes();
+
+// ═══════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════
+async function boot(){
+  let pDb = await sg('phases');
+  if (pDb && typeof pDb === 'object' && !Array.isArray(pDb) && pDb.phases) pDb = pDb.phases;
+  PHASES = Array.isArray(pDb) ? pDb : (pDb ? Object.values(pDb) : DEFAULT_PHASES);
+  
+  OP=await sg('op')||{t1:'done',t2:'done'};
+  
+  const mDb=await sg('members'); MEMBERS=Array.isArray(mDb)?mDb:(mDb?Object.values(mDb):[]);
+  const aDb=await sg('activity'); ACTIVITY=Array.isArray(aDb)?aDb:(aDb?Object.values(aDb):[]);
+  const cDb=await sg('comments'); COMMENTS=Array.isArray(cDb)?cDb:(cDb?Object.values(cDb):[]);
+  const chDb=await sg('challenges'); CHALLENGES=Array.isArray(chDb)?chDb:(chDb?Object.values(chDb):[]);
+  GLOB_Q=await sg('globalQuizzes')||{};
+
+  // Check if this friend (or owner) already exists in the global DB
+  const ex = MEMBERS.find(m => m.name.toLowerCase() === ME.name.toLowerCase());
+  
+  if(!ex){
+    // New user entirely! Add them to the DB.
+    MEMBERS.push({name:ME.name,role:ME.role,color:ME.color,emoji:ME.emoji,progress:ME.role==='owner'?OP:{}});
+    await ss('members',MEMBERS);
+    if(ME.role==='friend')await addAct('join',ME.name,`<strong>${ME.name}</strong> joined the ROS2 Squad! 👋`);
+  } else {
+    // Returning user! Sync local ME state to match their original DB properties
+    ME.color = ex.color;
+    ME.emoji = ex.emoji;
+    ME.role = ex.role; 
+    
+    // As Owner, only push progress to members array if it differs
+    if(ME.role==='owner'){
+      if(JSON.stringify(ex.progress) !== JSON.stringify(OP)) {
+        ex.progress=OP;
+        // Commenting this out to avoid race condition wipes on refresh. Owner progress is tracked globally in OP anyway.
+        // await ss('members',MEMBERS); 
+      }
+    }
+  }
+  document.getElementById('ob').style.display='none';
+  document.getElementById('app-hdr').style.display='flex';
+  document.getElementById('app-main').style.display='block';
+  const av=document.getElementById('h-av');
+  av.textContent=ME.emoji;av.style.background=ME.color+'22';
+  document.getElementById('h-un').textContent=ME.name;
+  document.getElementById('h-pip').textContent=ME.role==='owner'?'OWNER':'FRIEND';
+  document.getElementById('h-uc').className='hdr-user r'+ME.role[0];
+  if(ME.role!=='owner'){
+    document.getElementById('nav-rm').textContent="Rohit's Roadmap";
+    document.getElementById('nav-rm-mobile').children[1].textContent="Rohit's Roadmap";
+    document.querySelectorAll('.hn-int').forEach(el=>el.style.display='none');
+  } else {
+    document.getElementById('export-json-btn').classList.remove('hidden');
+    document.getElementById('export-json-btn').classList.add('flex');
+  }
+  renderAll();
+  setInterval(sync,12000);
+}
+async function sync(){
+  let pDb = await sg('phases');
+  if (pDb && typeof pDb === 'object' && !Array.isArray(pDb) && pDb.phases) pDb = pDb.phases;
+  PHASES = Array.isArray(pDb) ? pDb : (pDb ? Object.values(pDb) : PHASES);
+  
+  OP=await sg('op')||OP;
+  
+  const mDb=await sg('members'); MEMBERS=Array.isArray(mDb)?mDb:(mDb?Object.values(mDb):MEMBERS);
+  const aDb=await sg('activity'); ACTIVITY=Array.isArray(aDb)?aDb:(aDb?Object.values(aDb):ACTIVITY);
+  const cDb=await sg('comments'); COMMENTS=Array.isArray(cDb)?cDb:(cDb?Object.values(cDb):COMMENTS);
+  const chDb=await sg('challenges'); CHALLENGES=Array.isArray(chDb)?chDb:(chDb?Object.values(chDb):CHALLENGES);
+  GLOB_Q=await sg('globalQuizzes')||GLOB_Q;
+  
+  renderActList();renderCmList();renderMembers();renderHero();
+}
+function renderAll(){renderSquad();renderRM();renderQHub();renderCmList();renderCh();}
+
+// ═══════════════════════════════════════
+// ACTIVITY
+// ═══════════════════════════════════════
+async function addAct(type,user,text){
+  ACTIVITY.unshift({type,user,text,ts:Date.now(),reacts:{}});
+  if(ACTIVITY.length>40)ACTIVITY=ACTIVITY.slice(0,40);
+  await ss('activity',ACTIVITY);renderActList();
+}
+
+// ═══════════════════════════════════════
+// SQUAD VIEW
+// ═══════════════════════════════════════
+function renderSquad(){renderHero();renderMembers();renderActList();}
+
+function myProg() {
+  if (ME?.role === 'owner') return OP;
+  const me = MEMBERS.find(m => m.name === ME?.name);
+  return me ? (me.progress || {}) : {};
+}
+
+function oStats(){
+  const all=AT();
+  const prog = myProg();
+  const done=all.filter(t=>(prog[t.id]||'none')==='done').length;
+  const inp=all.filter(t=>(prog[t.id]||'none')==='inprog').length;
+  const allS=Object.values(GLOB_Q).flat();
+  const q=allS.length;
+  const av=q?Math.round(allS.reduce((a,s)=>a+(s.sc/s.qs.length)*100,0)/q):null;
+  return{total:all.length,done,inp,q,av,pct:Math.round(done/all.length*100)};
+}
+
+function renderHero(){
+  const s=oStats();
+  const fill=100 - s.pct;
+  document.getElementById('squad-hero').innerHTML=`
+<section class="glass-panel relative mb-8 flex flex-col items-center justify-between overflow-hidden rounded-3xl border border-primary/10 p-6 glow-border-primary lg:flex-row md:p-8 gap-6">
+    <div class="absolute top-0 right-0 h-64 w-64 -mt-32 -mr-32 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+    <div class="flex w-full items-center gap-6 lg:w-auto md:gap-10">
+        <div class="relative size-24 shrink-0 md:size-32">
+            <svg class="size-full -rotate-90" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                <circle class="stroke-primary/10" cx="18" cy="18" fill="none" r="16" stroke-width="2.5"></circle>
+                <circle class="stroke-primary transition-all duration-1000 ease-out" cx="18" cy="18" fill="none" r="16" stroke-dasharray="100" stroke-dashoffset="${fill}" stroke-linecap="round" stroke-width="2.5"></circle>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-xl font-bold font-mono text-primary md:text-2xl">${s.pct}%</span>
+                <span class="text-[8px] uppercase tracking-tighter text-primary/60 md:text-[10px]">Progress</span>
+            </div>
+        </div>
+        <div class="flex-1">
+            <div class="mb-1 flex flex-wrap items-center gap-3">
+                <h1 class="text-lg font-bold tracking-tight text-slate-100 md:text-3xl">${ME?.name}'s ROS2 Journey</h1>
+                <span class="truncate rounded bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">${ME?.role === 'owner' ? 'Squad Owner' : 'Squad Friend'}</span>
+            </div>
+            <p class="hidden max-w-md text-xs text-slate-400 sm:block md:text-sm">Drone Engineer → ROS2 Developer · ${MEMBERS.filter(m=>m.role==='friend').length} friend(s) supporting</p>
+        </div>
+    </div>
+    <div class="flex w-full flex-wrap gap-4 lg:w-auto lg:flex-nowrap">
+        <div class="flex-1 rounded-2xl border glass-panel border-primary/20 px-6 py-4 text-center lg:flex-none">
+            <p class="mb-1 text-[10px] font-mono uppercase text-primary/60 md:text-xs">Tasks Done</p>
+            <p class="text-2xl font-bold font-mono text-white md:text-3xl">${s.done}</p>
+        </div>
+        ${s.av!=null?`
+        <div class="flex-1 rounded-2xl border glass-panel border-secondary/20 px-6 py-4 text-center lg:flex-none">
+            <p class="mb-1 text-[10px] font-mono uppercase text-secondary/60 md:text-xs">Avg Score</p>
+            <p class="text-2xl font-bold font-mono text-white md:text-3xl">${s.av}<span class="text-lg opacity-50">%</span></p>
+        </div>`:''}
+    </div>
+</section>`;
+}
+function renderMembers(){
+  const el=document.getElementById('members-grid');if(!el)return;
+  const fr=MEMBERS.filter(m=>m.role==='friend');
+  if(!fr.length){el.innerHTML=`<div class="col-span-1 rounded-2xl border border-dashed border-slate-700/50 p-6 text-center text-xs font-mono text-slate-500">No friends joined yet. Share the link! 🔗</div>`;return;}
+  el.innerHTML=fr.map(m=>{
+    const pr=m.progress||{};const dn=Object.values(pr).filter(v=>v==='done').length;const p=Math.round(dn/AT().length*100);
+    return`<div class="group flex flex-col justify-between rounded-2xl border glass-panel border-primary/10 p-4 transition-all hover:border-primary/40 md:p-6">
+      <div class="mb-4 flex items-center gap-4 md:mb-6">
+        <div class="size-12 flex shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-black/40 text-2xl shadow-inner transition-colors group-hover:border-[${m.color}] md:size-14" style="box-shadow: inset 0 0 20px ${m.color}22">${m.emoji}</div>
+        <div class="min-w-0 flex-1">
+          <h4 class="truncate font-bold text-slate-100 transition-colors group-hover:text-[${m.color}]" style="color: ${m.color}">${m.name}</h4>
+          <p class="truncate text-[10px] font-mono uppercase text-slate-500 md:text-xs">Friend · ${dn} done</p>
+        </div>
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-[10px] font-mono uppercase text-slate-400">
+          <span>Sync Status</span><span style="color: ${m.color}">${p}%</span>
+        </div>
+        <div class="h-1.5 w-full shrink-0 overflow-hidden rounded-full bg-slate-800">
+          <div class="h-full rounded-full transition-all duration-1000" style="width: ${p}%; background-color: ${m.color}; box-shadow: 0 0 8px ${m.color}88"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderActList(){
+  const el=document.getElementById('act-list');if(!el)return;
+  if(!ACTIVITY.length){el.innerHTML=`<div class="rounded-xl border border-dashed border-slate-700/50 p-8 text-center text-xs font-mono text-slate-500">No activity yet. Start learning! 🚀</div>`;return;}
+  el.innerHTML=`<div class="space-y-5 pb-4">` + ACTIVITY.slice(0,14).map((a,i)=>{
+    const c=clr(a.user);
+    const rks=Object.keys(a.reacts||{});
+    const rh=rks.map(k=>`<button class="flex items-center gap-1 rounded-full border bg-slate-800/50 px-2 py-0.5 text-[10px] transition-all ${a.reacts[k]&&a.reacts[k].includes(ME?.name)?'border-primary/50 text-primary':'border-slate-700 text-slate-400 hover:border-slate-500'}" onclick="reactAct(${i},'${k}')">${k} <span>${a.reacts[k].length}</span></button>`).join('');
+    
+    // Determine dot color based on activity type for better visual feedback
+    let dotColor = 'bg-primary'; 
+    if(a.type==='done') dotColor='bg-accent';
+    else if(a.type==='quiz') dotColor='bg-secondary';
+    
+    return`<div class="group flex gap-4">
+      <div class="flex shrink-0 flex-col items-center">
+        <div class="size-2 rounded-full ${dotColor} shadow-[0_0_8px_${dotColor==='bg-primary'?'rgba(19,236,236,0.5)':dotColor==='bg-accent'?'rgba(34,197,94,0.5)':'rgba(168,85,247,0.5)'}] md:size-3"></div>
+        ${i < Math.min(ACTIVITY.length, 14) - 1 ? `<div class="mt-2 h-full w-px bg-slate-800"></div>` : ''}
+      </div>
+      <div class="min-w-0 flex-1 pb-2">
+        <div class="mb-1 flex items-center justify-between">
+            <p class="text-[10px] font-mono text-slate-500">${rt(a.ts)}</p>
+        </div>
+        <div class="break-words text-sm leading-snug text-slate-300">
+            <div class="mr-1 inline-block">${emj(a.user)}</div> ${a.text}
+        </div>
+        ${rh?`<div class="mt-2 flex flex-wrap gap-2">${rh}</div>`:''}
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+async function reactAct(idx,emoji){
+  if(!ME)return;
+  if(!ACTIVITY[idx].reacts)ACTIVITY[idx].reacts={};
+  if(!ACTIVITY[idx].reacts[emoji])ACTIVITY[idx].reacts[emoji]=[];
+  const arr=ACTIVITY[idx].reacts[emoji];
+  const p=arr.indexOf(ME.name);
+  if(p>-1)arr.splice(p,1);else arr.push(ME.name);
+  await ss('activity',ACTIVITY);renderActList();
+}
+
+// ═══════════════════════════════════════
+// ROADMAP
+// ═══════════════════════════════════════
+function renderRM(){
+  const el=document.getElementById('rm-body');const own=ME?.role==='owner';
+  const prog=myProg();
+  el.innerHTML='<div class="space-y-12 pb-10">' + PHASES.map(ph=>{
+    let ts=ph.topics;
+    if(rmF!=='all')ts=ts.filter(t=>(prog[t.id]||'none')===rmF);
+    if(!ts.length)return'';
+    const dn=ph.topics.filter(t=>(prog[t.id]||'none')==='done').length;
+    return`<div>
+      <div class="sticky top-[72px] z-10 mb-6 flex flex-wrap items-center gap-3 rounded-xl border glass-panel border-slate-800 p-3 shadow-lg backdrop-blur-xl lg:top-[88px] lg:p-4">
+        <div class="size-8 flex shrink-0 items-center justify-center rounded-lg border border-white/5 text-sm font-bold font-mono" style="background:${ph.hex}22;color:${ph.hex}">${ph.num}</div>
+        <div class="flex-1 text-sm font-bold text-slate-100 md:text-base">${ph.name}</div>
+        <div class="rounded-md px-2 py-1 text-[9px] font-bold uppercase font-mono" style="background:${ph.hex}15;color:${ph.hex}">${ph.tag}</div>
+        <div class="rounded-md bg-slate-800 px-2 py-1 text-[10px] font-mono text-slate-400">${dn}/${ph.topics.length}</div>
+      </div>
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">${ts.map(t=>tcCard(t,own,ph.id)).join('')}</div>
+      ${own?`<button class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/30 p-4 text-xs font-mono text-primary/70 transition-colors hover:border-primary/60 hover:text-primary hover:bg-primary/5" onclick="openTopicModal('${ph.id}')">
+          <span class="material-symbols-outlined text-lg">add_circle</span> Add another topic to ${ph.name}
+      </button>`:''}
+    </div>`;
+  }).join('') + '</div>';
+}
+function tcCard(t,own,phId){
+  const prog=myProg();
+  const st=(prog[t.id]||'none');
+  const ic=st==='done'?'✓':st==='inprog'?'⟳':'';
+  const sc=GLOB_Q[t.id]||[];
+  const best=sc.length?Math.max(...sc.map(s=>Math.round((s.sc/s.qs.length)*100))):null;
+  const tbcol=st==='done'?'border-accent':st==='inprog'?'border-[#ffd60a]':'border-slate-800';
+  const tbg=st==='done'?'var(--done)':st==='inprog'?'rgba(255,214,10,0.2)':'transparent';
+  const tc=st==='done'?'#000':st==='inprog'?'var(--inprog)':'transparent';
+  
+  const ebs=`${st!=='done'?`<button class="px-2 py-1 rounded-md border border-accent/40 text-accent hover:bg-accent/10 transition-colors bg-transparent text-[10px] font-mono font-bold" onclick="mkT('${t.id}','done')">✓ Done</button>`:''}${st==='none'?`<button class="px-2 py-1 rounded-md border border-[#ffd60a]/40 text-[#ffd60a] hover:bg-[#ffd60a]/10 transition-colors bg-transparent text-[10px] font-mono font-bold" onclick="mkT('${t.id}','inprog')">▶ Start</button>`:''}${st!=='none'?`<button class="px-2 py-1 rounded-md border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-300 transition-colors bg-transparent text-[10px] font-mono font-bold" onclick="mkT('${t.id}','none')">↺ Reset</button>`:''}`;
+  
+  return`<div class="group relative flex flex-col justify-between overflow-hidden rounded-xl border-l-[3px] p-5 transition-all hover:-translate-y-1 glass-panel" style="border-left-color: var(--${st==='done'?'done':st==='inprog'?'inprog':'border2'}); box-shadow: 0 4px 20px ${st==='done'?'rgba(34,197,94,0.1)':'transparent'}" id="tc-${t.id}">
+    ${own?`<div class="absolute top-3 right-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button class="flex items-center justify-center size-6 rounded bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10" onclick="openTopicModal('${phId}', '${t.id}')"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+        <button class="flex items-center justify-center size-6 rounded bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-400/10" onclick="deleteTopic('${phId}', '${t.id}')"><span class="material-symbols-outlined text-[14px]">delete</span></button>
+    </div>`:''}
+    ${t.drone?`<div class="absolute top-3 right-3 flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[9px] font-mono text-blue-400">🚁 UAV</div>`:''}
+    <div class="mb-3 flex items-start gap-3 w-10/12">
+      <div class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2 text-[10px] font-bold transition-colors" style="border-color: ${st==='none'?'var(--border2)' : ''}; border-color: var(--${st==='done'?'done':st==='inprog'?'inprog':'border2'}); background: ${tbg}; color: ${tc}">${ic}</div>
+      <div class="pr-14 text-sm font-bold leading-snug text-slate-100 transition-colors group-hover:text-primary">${t.name}</div>
+    </div>
+    <div class="mb-4 text-xs font-mono leading-relaxed text-slate-400">${t.desc}</div>
+    ${t.dn?`<div class="mb-4 inline-block rounded border-l-[3px] border-blue-500/40 bg-blue-500/5 p-2 text-[10px] font-mono text-blue-400">💬 ${t.dn}</div>`:''}
+    <div class="mt-auto flex items-end justify-between gap-2 border-t border-slate-800/50 pt-3">
+      <div class="flex flex-1 flex-wrap gap-1.5">
+        ${t.tags.map(g=>`<span class="rounded border border-slate-700 bg-slate-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 transition-colors hover:border-slate-500">${g}</span>`).join('')}
+      </div>
+      <div class="ml-2 flex shrink-0 gap-1.5">
+        ${own?`<button class="whitespace-nowrap rounded-md border border-primary/40 bg-transparent px-2 py-1 text-[10px] font-bold font-mono text-primary transition-colors hover:bg-primary/10" onclick="openQ('${t.id}')">Quiz${best!=null?` (${best}%)`:''}</button>`:''}
+        ${ebs}
+      </div>
+    </div>
+  </div>`;
+}
+async function mkT(id,st){
+  if(st === 'done' && ME?.role !== 'owner') {
+    const sc = GLOB_Q[id] || [];
+    if(sc.length === 0) {
+      showToast("Owner hasn't unlocked this yet! They need to take the quiz first.", 'e');
+      return;
+    }
+  }
+
+  const prog = myProg();
+  prog[id] = st;
+  
+  if (ME?.role === 'owner') {
+    OP = prog;
+    await ss('op', OP);
+  }
+  
+  const me = MEMBERS.find(m => m.name === ME.name);
+  if(me) {
+    me.progress = prog;
+    await ss('members', MEMBERS);
+  }
+
+  const t=AT().find(t=>t.id===id);
+  if(st==='done')await addAct('done',ME.name,`<strong>${ME.name}</strong> completed <span style="color:var(--neon2)">${t.name}</span> ✅`);
+  if(st==='inprog')await addAct('start',ME.name,`<strong>${ME.name}</strong> started <span style="color:var(--neon2)">${t.name}</span> 🔄`);
+  renderRM();renderHero();
+  showToast(st==='done'?'✅ Marked done!':'🔄 Started!',st==='done'?'s':'i');
+}
+function rmFlt(f,btn){
+    rmF=f;
+    document.querySelectorAll('.fb').forEach(b=>{
+        b.classList.remove('active','bg-slate-800','text-primary','border-primary/30');
+        b.classList.add('border-slate-700','bg-transparent','text-slate-400');
+    });
+    btn.classList.add('active','bg-slate-800','text-primary','border-primary/30');
+    btn.classList.remove('border-slate-700','bg-transparent');
+    renderRM();
+}
+
+// ═══════════════════════════════════════
+// ROADMAP EDITOR
+// ═══════════════════════════════════════
+let editCtx = null;
+function openTopicModal(phId, tId = null) {
+  if(ME?.role!=='owner')return;
+  const ph = PHASES.find(p=>p.id===phId); if(!ph)return;
+  let tr = tId ? ph.topics.find(t=>t.id===tId) : {id:'', name:'', desc:'', dn:'', tags:[], drone:false};
+  editCtx = {phId, tId};
+
+  const mt=document.getElementById('topic-edit-modal');
+  if(!mt){
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="topic-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4" style="display:none">
+        <div class="glass-panel w-full max-w-lg rounded-2xl border border-primary/20 p-6 md:p-8">
+          <h3 class="mb-6 text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary" id="tem-title"></h3>
+          <div class="space-y-4">
+            <div>
+              <label class="mb-1 block text-xs font-mono text-slate-400">Topic Name*</label>
+              <input type="text" id="tem-name" class="w-full rounded-lg border border-slate-700 bg-slate-900/50 p-3 text-sm text-white focus:border-primary focus:outline-none" placeholder="e.g. TF2 Transforms">
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-mono text-slate-400">Description*</label>
+              <textarea id="tem-desc" class="w-full rounded-lg border border-slate-700 bg-slate-900/50 p-3 text-sm text-white focus:border-primary focus:outline-none h-24" placeholder="Short description of the topic..."></textarea>
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-mono text-slate-400">Tags (comma separated)</label>
+              <input type="text" id="tem-tags" class="w-full rounded-lg border border-slate-700 bg-slate-900/50 p-3 text-sm text-white font-mono focus:border-primary focus:outline-none" placeholder="e.g. tf2, frames, rosbag">
+            </div>
+            <div class="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg">
+              <input type="checkbox" id="tem-drone" class="size-4 accent-blue-500 rounded cursor-pointer" onchange="document.getElementById('tem-dn-wrap').style.display=this.checked?'block':'none'">
+              <label for="tem-drone" class="text-sm font-bold text-blue-400 cursor-pointer">🚁 Mark as Drone Specific</label>
+            </div>
+            <div id="tem-dn-wrap" style="display:none">
+              <label class="mb-1 block text-[10px] font-mono text-blue-400/70">Drone Context Note</label>
+              <input type="text" id="tem-dn" class="w-full rounded-lg border border-blue-500/30 bg-blue-900/20 p-2 text-xs text-blue-300 focus:border-blue-400 focus:outline-none placeholder-blue-500/50" placeholder="Why is this important for drones?">
+            </div>
+          </div>
+          <div class="mt-8 flex justify-end gap-3">
+            <button class="rounded-lg px-5 py-2 text-sm font-bold text-slate-400 hover:text-white" onclick="document.getElementById('topic-edit-modal').style.display='none'">Cancel</button>
+            <button class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-black shadow-[0_0_15px_rgba(0,255,135,0.4)] transition-all hover:scale-105" onclick="saveTopic()">Save Topic</button>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+
+  document.getElementById('tem-title').innerText = tId ? 'Edit Topic' : 'New Topic';
+  document.getElementById('tem-name').value = tr.name;
+  document.getElementById('tem-desc').value = tr.desc;
+  document.getElementById('tem-tags').value = tr.tags.join(', ');
+  document.getElementById('tem-drone').checked = !!tr.drone;
+  document.getElementById('tem-dn-wrap').style.display = tr.drone ? 'block' : 'none';
+  document.getElementById('tem-dn').value = tr.dn || '';
+  
+  document.getElementById('topic-edit-modal').style.display='flex';
+}
+
+async function saveTopic() {
+  const nm = document.getElementById('tem-name').value.trim();
+  const ds = document.getElementById('tem-desc').value.trim();
+  if(!nm || !ds) { showToast('Name and Description are required!','e'); return; }
+
+  const phIdx = PHASES.findIndex(p=>p.id===editCtx.phId);
+  const drone = document.getElementById('tem-drone').checked;
+  const tn = {
+    id: editCtx.tId || ('t'+Date.now()),
+    name: nm,
+    desc: ds,
+    tags: document.getElementById('tem-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+    drone: drone
+  };
+  if(drone) tn.dn = document.getElementById('tem-dn').value.trim();
+
+  if(editCtx.tId) {
+    const tIdx = PHASES[phIdx].topics.findIndex(t=>t.id===editCtx.tId);
+    PHASES[phIdx].topics[tIdx] = tn;
+  } else {
+    PHASES[phIdx].topics.push(tn);
+  }
+
+  await ss('phases', PHASES);
+  await addAct(editCtx.tId ? 'edit' : 'add', ME.name, `<strong>${ME.name}</strong> ${editCtx.tId ? 'updated' : 'added a new topic:'} <span style="color:var(--neon2)">${tn.name}</span> 🛠️`);
+  document.getElementById('topic-edit-modal').style.display='none';
+  renderRM(); showToast('Roadmap updated!');
+}
+
+async function deleteTopic(phId, tId) {
+  if(!confirm('Are you sure you want to delete this topic?')) return;
+  const phIdx = PHASES.findIndex(p=>p.id===phId);
+  const tIdx = PHASES[phIdx].topics.findIndex(t=>t.id===tId);
+  const nm = PHASES[phIdx].topics[tIdx].name;
+  PHASES[phIdx].topics.splice(tIdx, 1);
+  await ss('phases', PHASES);
+  renderRM(); showToast('Topic deleted', 'e');
+  await addAct('del', ME.name, `<strong>${ME.name}</strong> removed topic: ${nm} 🗑️`);
+}
+
+// ═══════════════════════════════════════
+// QUIZ ENGINE
+// ═══════════════════════════════════════
+function renderQHub(){
+  const el=document.getElementById('q-hub');if(!el)return;
+  const tn=Object.keys(GLOB_Q).length;const tt=PHASES.reduce((s,p)=>s+p.topics.length,0);
+  const scs=AT().map(t=>GLOB_Q[t.id]?(Math.max(...GLOB_Q[t.id].map(x=>Math.round(x.sc/x.qs.length*100)))):0).filter(x=>x>0);
+  const av=scs.length?Math.round(scs.reduce((a,b)=>a+b,0)/scs.length):0;
+  
+  el.innerHTML=`
+    <div class="mb-6 flex items-center gap-2 text-2xl font-bold text-slate-100">
+        <span class="material-symbols-outlined text-primary">psychology</span> Quiz <span class="text-primary">Hub</span>
+    </div>
+    <div class="mb-10 grid grid-cols-2 gap-4 md:gap-6">
+      <div class="group relative overflow-hidden rounded-2xl border glass-panel border-primary/20 p-6 text-center shadow-lg md:p-8">
+        <div class="absolute inset-0 transition-colors bg-primary/5 group-hover:bg-primary/10"></div>
+        <div class="relative z-10 mb-2 block text-[10px] font-mono uppercase tracking-widest text-primary/60 md:text-xs">TOPICS QUIZZED</div>
+        <div class="relative z-10 text-3xl font-bold font-mono text-white md:text-5xl">${tn}<span class="text-lg text-slate-500 md:text-2xl">/${tt}</span></div>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border glass-panel border-secondary/20 p-6 text-center shadow-lg md:p-8">
+        <div class="absolute inset-0 transition-colors bg-secondary/5 group-hover:bg-secondary/10"></div>
+        <div class="relative z-10 mb-2 block text-[10px] font-mono uppercase tracking-widest text-secondary/60 md:text-xs">AVG TOP SCORE</div>
+        <div class="relative z-10 text-3xl font-bold font-mono text-white md:text-5xl">${av}<span class="text-lg text-secondary/50 md:text-2xl">%</span></div>
+      </div>
+    </div>
+    <div class="pl-1 text-xs font-bold font-mono uppercase tracking-wider text-slate-400">Recent History</div>
+    <div class="space-y-3">
+    ${Object.keys(GLOB_Q).length?Object.keys(GLOB_Q).sort((a,b)=>GLOB_Q[b][GLOB_Q[b].length-1].ts-GLOB_Q[a][GLOB_Q[a].length-1].ts).slice(0,5).map(k=>{
+      const t=AT().find(x=>x.id===k);
+      const mArray=GLOB_Q[k];
+      const m=mArray[mArray.length-1];
+      const p=Math.round(m.sc/m.qs.length*100);
+      const idx = mArray.length-1;
+      const flags = m.qs.filter((_, i) => m.ans[i] && m.ans[i].flagged).length;
+      const pcol = p>=80?'text-accent border-accent/20 bg-accent/5':p>=50?'text-[#ffd60a] border-[#ffd60a]/20 bg-[#ffd60a]/5':'text-red-400 border-red-500/20 bg-red-500/5';
+      const onClickAction = ME?.role === 'owner' ? `openQ('${k}','${t?.name||k}')` : `openQuizReview('${k}', ${idx})`;
+
+      return`<div class="flex items-center justify-between rounded-xl border glass-panel border-slate-800 p-4 transition-colors hover:border-slate-600 md:p-5 cursor-pointer hover:bg-white/5" onclick="${onClickAction}">
+        <div class="min-w-0 pr-4">
+            <div class="mb-1 truncate text-sm font-bold text-slate-100 md:text-base">${t?.name||k}</div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono text-slate-500">${m.ts?rt(m.ts):'Recently'}</span>
+              ${ME?.role!=='owner' ? `<span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-bold">Review</span>` : ''}
+              ${flags > 0 ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">flag</span> ${flags} Flag(s)</span>` : ''}
+            </div>
+        </div>
+        <div class="shrink-0 rounded-lg border px-3 py-1 text-xl font-bold font-mono md:text-2xl ${pcol}">${p}%</div>
+      </div>`;
+    }).join(''):'<div class="rounded-xl border border-dashed border-slate-700/50 p-8 text-center text-xs font-mono text-slate-500">No quizzes taken yet.</div>'}
+    </div>
+  `;
+  popChSels();
+}
+function openQ(tid, tnm, ch=null){
+  const t=AT().find(x=>x.id===tid);if(!t)return;
+  gv('quiz');
+  document.getElementById('q-hub').style.display='none';
+  document.getElementById('q-run').style.display='block';
+  document.getElementById('q-run').innerHTML=`
+    <div class="glass-panel relative mt-4 overflow-hidden rounded-3xl border border-primary/20 p-8 text-center shadow-lg md:p-12">
+        <div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+        <div class="relative z-10 mb-6 opacity-90 text-5xl md:text-7xl">🧠</div>
+        <h2 class="relative z-10 mb-3 text-2xl font-bold text-slate-100 md:text-3xl">${t.name}</h2>
+        <p class="relative z-10 mx-auto mb-8 max-w-lg text-sm leading-relaxed text-slate-400">${t.desc}</p>
+        <button class="relative z-10 inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-sm font-bold uppercase tracking-wide text-black shadow-[0_0_20px_rgba(19,236,236,0.3)] transition-colors hover:bg-cyan-400" onclick="startQ('${tid}','${t.name}',${ch})">
+            <span class="material-symbols-outlined">play_arrow</span> Start Quiz
+        </button>
+        <button class="relative z-10 mx-auto mt-6 block text-xs font-mono uppercase tracking-widest text-slate-500 transition-colors hover:text-white" onclick="closeQ()">Cancel</button>
+    </div>
+  `;
+}
+function closeQ(){
+  document.getElementById('q-hub').style.display='block';
+  document.getElementById('q-run').style.display='none';
+  document.getElementById('q-run').innerHTML='';
+  cQ=null;
+}
+async function startQ(tid, tnm, ch=null){
+  const t=AT().find(x=>x.id===tid);
+  document.getElementById('q-run').innerHTML=`
+    <div class="mt-4 p-8 text-center md:p-12">
+      <div class="spin"></div>
+      <div class="ld-msg mt-4 text-sm text-slate-400">Generating quiz for "${tnm}"…</div>
+    </div>`;
+  const ctx=t.drone?`Background: drone engineer (quadcopters/hexacopters, Pixhawk, ArduPilot). ${t.dn||''}`:'Background: robotics engineer (Arduino, RPi, embedded).';
+  const p=`You are a ROS2 expert. Create 5 quiz questions about "${t.name}" for someone with this background: ${ctx}. Topic: ${t.desc}. Mix: mcq, tf, sub. Make practical, scenario-based. ${t.drone?'Include 1-2 drone/UAV application questions.':''} Respond ONLY with valid JSON no markdown: {"questions":[{"type":"mcq","q":"...","context":null,"options":["A. ...","B. ...","C. ...","D. ..."],"a":"A","e":"..."},{"type":"tf","q":"True or False: ...","context":null,"options":["True","False"],"a":"True","e":"..."},{"type":"sub","q":"...","context":null,"options":null,"a":"key concepts: ...","e":"..."}]}`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.ENV.GEMINI_API_KEY}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents: [{ parts: [{ text: p }] }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+    const data=await res.json();
+    const raw=data.candidates[0].content.parts[0].text;
+    const parsed=JSON.parse(raw);
+    cQ={tid,tnm,qs:parsed.questions,idx:0,sc:0,ans:[],sag:{},ch};
+    renderQQ();
+  }catch(e){
+    document.getElementById('q-run').innerHTML=`
+      <div class="mt-4 p-8 text-center md:p-12">
+        <div class="mb-4 text-5xl">⚠️</div>
+        <div class="mb-6 text-sm text-red-400">Failed to generate quiz. Please try again.</div>
+        <button class="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-black shadow-lg transition-colors hover:bg-cyan-400" onclick="openQ('${tid}','${tnm}',${ch})">Retry</button>
+      </div>`;
+  }
+}
+function renderQQ(){
+  const q=cQ.qs[cQ.idx];
+  const p=Math.round(cQ.idx/cQ.qs.length*100);
+  document.getElementById('q-run').innerHTML=`
+    <div class="flex items-center justify-between mb-8 mt-4">
+      <div class="flex items-center gap-4">
+        <button class="size-10 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:text-white flex items-center justify-center text-slate-400 transition-colors shadow-sm" onclick="closeQ()">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+        <div>
+          <div class="text-[9px] text-primary/60 font-mono uppercase tracking-widest mb-0.5">Quiz: ${cQ.tnm}</div>
+          <div class="text-sm font-bold text-slate-200">Question ${cQ.idx+1}/${cQ.qs.length}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+          <div class="w-24 md:w-32 h-1.5 rounded-full bg-slate-800 border border-slate-700 overflow-hidden"><div class="h-full bg-primary transition-all duration-300 shadow-[0_0_8px_rgba(19,236,236,0.8)]" style="width:${p}%"></div></div>
+          <div class="text-[10px] font-mono text-slate-400 border border-slate-700 bg-slate-800 px-1.5 py-0.5 rounded">${p}%</div>
+      </div>
+    </div>
+    
+    <div class="glass-panel p-6 md:p-8 rounded-2xl border border-primary/20 shadow-lg mb-6 relative hover:border-primary/40 transition-colors">
+        <div class="absolute top-4 right-4 px-2 py-1 rounded bg-slate-800/80 text-[9px] font-mono border border-slate-700 text-slate-400 uppercase tracking-widest shadow-sm">${q.type==='mcq'?'Multiple Choice':q.type==='tf'?'True/False':'Subjective'}</div>
+        <div class="text-lg md:text-xl font-medium text-slate-100 mb-8 mt-4 leading-relaxed pr-24">${q.q}</div>
+        ${q.type==='mcq'?`<div class="space-y-3">
+          ${q.options.map((o,i)=>`<button class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800 hover:border-primary/60 text-sm text-slate-200 transition-all font-medium flex gap-3 shadow-sm hover:shadow-md" onclick="asn('${i}')"><span class="text-primary font-bold opacity-70">${['A','B','C','D'][i]}.</span> <span>${o}</span></button>`).join('')}
+        </div>`:''}
+        ${q.type==='tf'?`<div class="flex gap-4">
+          <button class="flex-1 p-5 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800 hover:border-accent/60 text-base text-slate-200 transition-all font-bold text-center shadow-sm hover:shadow-md" onclick="asn('True')">True</button>
+          <button class="flex-1 p-5 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800 hover:border-red-500/60 text-base text-slate-200 transition-all font-bold text-center shadow-sm hover:shadow-md" onclick="asn('False')">False</button>
+        </div>`:''}
+        ${q.type==='sub'?`
+          <textarea class="w-full bg-background-dark/80 border border-slate-700 rounded-xl text-slate-100 p-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-slate-600 min-h-[140px] mb-4 shadow-inner" id="sa-inp" placeholder="Type your answer here..."></textarea>
+          <div class="flex justify-end">
+            <button class="px-6 py-3 rounded-xl bg-primary text-black font-bold text-sm tracking-wide hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(19,236,236,0.2)] flex items-center gap-2" id="qs-b" onclick="asn(document.getElementById('sa-inp').value)">Submit Answer <span class="material-symbols-outlined text-[16px]">send</span></button>
+          </div>
+        `:''}
+    </div>
+  `;
+}
+
+async function asn(v) {
+  if(v===undefined||String(v).trim()==='')return;
+  const q=cQ.qs[cQ.idx];
+  let isC = false;
+  let ansText = v;
+  
+  if(q.type==='sub'){
+    const sb=document.getElementById('qs-b');
+    if(sb){sb.disabled=true;sb.innerHTML='<div class="spin" style="width:16px;height:16px;border-width:2px;border-top-color:#000;"></div> Grading...';}
+    try{
+      const gp=`Grade ROS2 quiz. Q:"${q.q}" Expected:"${q.a}" Student:"${v}" JSON ONLY: {"c":boolean,"e":"<80 words string"}`;
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.ENV.GEMINI_API_KEY}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contents: [{ parts: [{ text: gp }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+      const data=await res.json();
+      const raw=data.candidates[0].content.parts[0].text;
+      const g=JSON.parse(raw);
+      isC = g.c;
+      if(g.e) q.e = g.e;
+    }catch{ isC=true; }
+  }else if (q.type==='mcq') {
+    const optIdx = parseInt(v);
+    const optLetter = ['A','B','C','D'][optIdx];
+    ansText = q.options[optIdx];
+    isC = (optLetter === q.a || q.a.startsWith(optLetter) || ansText === q.a);
+  } else {
+    isC = (v.toLowerCase() === String(q.a).toLowerCase());
+  }
+  
+  if(isC) cQ.sc++;
+  cQ.ans.push({a:ansText, c:isC});
+  
+  cQ.idx++;
+  if(cQ.idx < cQ.qs.length) renderQQ();
+  else showRes();
+}
+
+async function showRes(){
+  const p=Math.round(cQ.sc/cQ.qs.length*100);
+  const pcol = p>=80?'text-accent':p>=50?'text-[#ffd60a]':'text-red-400';
+  document.getElementById('q-run').innerHTML=`
+    <div class="glass-panel p-8 md:p-12 rounded-3xl border border-primary/20 text-center shadow-2xl relative overflow-hidden mt-6">
+        <div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+        <div class="text-[50px] md:text-[70px] mb-4 drop-shadow-lg opacity-90">${p>=80?'🎉':p>=50?'👍':'💪'}</div>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-100 mb-2 relative z-10 tracking-tight">Quiz Complete!</h2>
+        <p class="text-sm text-slate-400 mb-8 font-mono relative z-10 tracking-wide">${cQ.tnm}</p>
+        
+        <div class="inline-flex bg-background-dark p-6 rounded-2xl border border-slate-800 mb-10 relative z-10 shadow-inner">
+            <div class="flex flex-col items-center px-6 border-r border-slate-700">
+                <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-2 font-bold">SCORE</span>
+                <span class="text-4xl font-mono font-bold ${pcol}">${p}%</span>
+            </div>
+            <div class="flex flex-col items-center px-6">
+                <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-2 font-bold">CORRECT</span>
+                <span class="text-4xl font-mono font-bold text-slate-100">${cQ.sc}<span class="text-lg text-slate-500">/${cQ.qs.length}</span></span>
+            </div>
+        </div>
+        
+        <div class="flex justify-center gap-4 relative z-10 flex-wrap">
+            <button class="px-6 py-3.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-500 font-bold text-sm transition-all flex items-center gap-2" onclick="closeQ()"><span class="material-symbols-outlined text-[18px]">home</span> Return Home</button>
+            <button class="px-6 py-3.5 rounded-xl bg-primary text-black font-bold text-sm tracking-wide hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(19,236,236,0.3)] flex items-center gap-2" onclick="openQ('${cQ.tid}','${cQ.tnm}')"><span class="material-symbols-outlined text-[18px]">replay</span> Retake Quiz</button>
+        </div>
+    </div>
+    
+    <div class="mt-10 space-y-4">
+        <div class="text-xs font-mono text-slate-400 mb-4 uppercase tracking-wider pl-1 font-bold">Question Review</div>
+        ${cQ.qs.map((q,i)=>{
+            const isCorrect = cQ.ans[i].c;
+            const flagged = cQ.ans[i].flagged;
+            return `<div class="glass-panel p-5 rounded-xl border ${isCorrect?'border-accent/20 bg-accent/5':'border-red-500/20 bg-red-500/5'} relative">
+                ${flagged ? `<div class="absolute -top-3 -right-3 size-8 rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] border-2 border-[#07080f] text-white"><span class="material-symbols-outlined text-[14px]">flag</span></div>` : ''}
+                <div class="flex items-start gap-4">
+                    <div class="size-6 md:size-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border ${isCorrect?'bg-accent/10 border-accent/30 text-accent':'bg-red-500/10 border-red-500/30 text-red-500'}">
+                        <span class="material-symbols-outlined text-[16px]">${isCorrect?'check':'close'}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm md:text-base font-medium text-slate-200 mb-3">${q.q}</div>
+                        <div class="text-xs text-slate-400 font-mono mb-1 bg-slate-800/50 p-2 rounded-lg border border-slate-800"><span class="text-slate-500">Your Answer:</span> <span class="${isCorrect?'text-accent':'text-red-400'}">${cQ.ans[i].a}</span></div>
+                        ${!isCorrect ? `<div class="text-xs text-slate-400 font-mono bg-slate-800/50 p-2 rounded-lg border border-slate-800 mt-2"><span class="text-slate-500">Correct Answer:</span> <span class="text-accent">${q.a}</span></div>` : ''}
+                        ${!isCorrect && q.e ? `<div class="text-[10px] mt-3 p-3 bg-red-500/5 rounded border border-red-500/20 text-slate-300 leading-relaxed max-w-2xl"><span class="text-slate-500 block mb-1">Explanation:</span>${q.e}</div>` : ''}
+                        
+                        ${cQ.ans[i].comments && cQ.ans[i].comments.length ? `<div class="mt-4 pt-3 border-t border-slate-700/50 space-y-2">
+                           ${cQ.ans[i].comments.map(c=>`<div class="text-[10px] font-mono text-slate-300"><strong style="color:${clr(c.user)}">${c.user}:</strong> ${c.text}</div>`).join('')}
+                        </div>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('')}
+    </div>
+  `;
+  cQ.ts = Date.now();
+  if(!GLOB_Q[cQ.tid]) GLOB_Q[cQ.tid]=[];
+  GLOB_Q[cQ.tid].push(cQ);
+  await ss('globalQuizzes', GLOB_Q);
+  
+  const gEmoji=p>=80?'🎉':p>=50?'👍':'💪';
+  await addAct('quiz',ME.name,`<strong>${ME.name}</strong> scored <span class="text-primary font-bold">${p}%</span> on <span class="text-secondary font-bold">${cQ.tnm}</span> ${gEmoji}`);
+  
+  if(cQ.ch){
+    const chg=CHALLENGES[cQ.ch];
+    if(chg.to===ME?.name) chg.toScore=p;
+    else chg.fromScore=p;
+    if(chg.toScore!=null&&chg.fromScore!=null) chg.status='completed';
+    ss('challenges',CHALLENGES);
+  }
+}
+
+function openQuizReview(tid, idx){
+  const atmpt = GLOB_Q[tid][idx];
+  if(!atmpt) return;
+  const p=Math.round(atmpt.sc/atmpt.qs.length*100);
+  const pcol = p>=80?'text-accent border-accent/20 bg-accent/5':p>=50?'text-[#ffd60a] border-[#ffd60a]/20 bg-[#ffd60a]/5':'text-red-400 border-red-500/20 bg-red-500/5';
+  
+  document.getElementById('q-hub').style.display='none';
+  document.getElementById('q-run').style.display='block';
+  document.getElementById('q-run').innerHTML=`
+    <div class="flex items-center justify-between mb-8 mt-4">
+      <div class="flex items-center gap-4">
+        <button class="size-10 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:text-white flex items-center justify-center text-slate-400 transition-colors shadow-sm" onclick="closeQ()">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </button>
+        <div>
+          <div class="text-[9px] text-blue-400 font-mono uppercase tracking-widest mb-0.5">Quiz Review Mode</div>
+          <div class="text-sm font-bold text-slate-200">${atmpt.tnm}</div>
+        </div>
+      </div>
+      <div class="shrink-0 rounded-lg border px-3 py-1 text-xl font-bold font-mono md:text-2xl ${pcol}">${p}%</div>
+    </div>
+    
+    <div class="space-y-4">
+      ${atmpt.qs.map((q,i)=>{
+        const isCorrect = atmpt.ans[i].c;
+        const flagged = atmpt.ans[i].flagged;
+        return `<div class="glass-panel p-5 rounded-xl border ${flagged ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isCorrect?'border-accent/20 bg-accent/5':'border-red-500/20 bg-red-500/5'} relative transition-all">
+            ${flagged ? `<div class="absolute -top-3 -right-3 size-8 rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] border-2 border-[#07080f] text-white"><span class="material-symbols-outlined text-[14px]">flag</span></div>` : ''}
+            <div class="flex items-start gap-4">
+                <div class="size-6 md:size-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border ${isCorrect?'bg-accent/10 border-accent/30 text-accent':'bg-red-500/10 border-red-500/30 text-red-500'}">
+                    <span class="material-symbols-outlined text-[16px]">${isCorrect?'check':'close'}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm md:text-base font-medium text-slate-200 mb-3 pr-8">${q.q}</div>
+                    <div class="text-xs text-slate-400 font-mono mb-1 bg-slate-800/50 p-2 rounded-lg border border-slate-800"><span class="text-slate-500">Rohit's Answer:</span> <span class="${isCorrect?'text-accent':'text-red-400'}">${atmpt.ans[i].a}</span></div>
+                    ${!isCorrect ? `<div class="text-xs text-slate-400 font-mono bg-slate-800/50 p-2 rounded-lg border border-slate-800 mt-2"><span class="text-slate-500">Correct Answer:</span> <span class="text-accent">${q.a}</span></div>` : ''}
+                    
+                    ${atmpt.ans[i].comments && atmpt.ans[i].comments.length ? `<div class="mt-4 pt-3 border-t border-slate-700/50 space-y-2 mb-4">
+                        ${atmpt.ans[i].comments.map(c=>`<div class="text-[10px] font-mono text-slate-300"><strong style="color:${clr(c.user)}">${c.user}:</strong> ${c.text}</div>`).join('')}
+                    </div>` : '<div class="h-4"></div>'}
+                    
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-700/50">
+                        <div class="flex items-center gap-2 flex-1 mr-4">
+                            <input type="text" id="cm-q-${tid}-${idx}-${i}" class="flex-1 bg-slate-900/50 border border-slate-700 rounded p-1.5 text-[10px] font-mono text-slate-300 focus:border-primary focus:outline-none placeholder-slate-600" placeholder="Add a comment...">
+                            <button class="shrink-0 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded border border-slate-700" onclick="addQuizComment('${tid}', ${idx}, ${i})">Post</button>
+                        </div>
+                        ${!isCorrect && !flagged ? `<button class="shrink-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 transition-colors border border-red-500/30 px-3 py-1.5 rounded" onclick="flagQuizQuestion('${tid}', ${idx}, ${i})"><span class="material-symbols-outlined text-[14px]">flag</span> Flag as Retry</button>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function addQuizComment(tid, idx, qId) {
+    const inp = document.getElementById(`cm-q-${tid}-${idx}-${qId}`);
+    if(!inp || !inp.value.trim()) return;
+    const txt = inp.value.trim();
+    if(!GLOB_Q[tid][idx].ans[qId].comments) GLOB_Q[tid][idx].ans[qId].comments = [];
+    GLOB_Q[tid][idx].ans[qId].comments.push({user: ME.name, text: txt});
+    await ss('globalQuizzes', GLOB_Q);
+    openQuizReview(tid, idx);
+    showToast('Comment saved!', 'i');
+}
+
+async function flagQuizQuestion(tid, idx, qId) {
+    GLOB_Q[tid][idx].ans[qId].flagged = true;
+    await ss('globalQuizzes', GLOB_Q);
+    await addAct('warning', ME.name, `<strong>${ME.name}</strong> flagged a question for Rohit to retry in <span style="color:var(--neon2)">${GLOB_Q[tid][idx].tnm}</span> 🚩`);
+    openQuizReview(tid, idx);
+    showToast('Question flagged for Rohit to retry!', 'e');
+}
+
+// ═══════════════════════════════════════
+// CHEERS & COMMENTS
+// ═══════════════════════════════════════
+async function sendCheer(e){
+  if(!ME)return;
+  COMMENTS.unshift({user:ME.name,text:e+' (cheer)',ts:Date.now(),isCheer:true,emoji:e,color:ME.color});
+  await ss('comments',COMMENTS);
+  await addAct('cheer',ME.name,`${e} <strong>${ME.name}</strong> cheered for Rohit!`);
+  renderCmList();showToast('Cheer sent! '+e,'s');
+}
+async function sendComment(){
+  if(!ME)return;
+  const inp=document.getElementById('cm-inp');const txt=inp.value.trim();if(!txt)return;
+  COMMENTS.unshift({user:ME.name,text:txt,ts:Date.now(),isCheer:false,color:ME.color});
+  await ss('comments',COMMENTS);
+  await addAct('comment',ME.name,`<strong>${ME.name}</strong>: "${txt.slice(0,60)}${txt.length>60?'…':''}"`);
+  inp.value='';renderCmList();showToast('Comment posted! 💬','i');
+}
+function renderCmList(){
+  const el=document.getElementById('cm-list-el');if(!el)return;
+  if(!COMMENTS.length){el.innerHTML=`<div class="text-center p-10 text-slate-500 font-mono text-sm border border-dashed border-slate-700/50 rounded-2xl">No comments yet. Be the first to cheer! 🎉</div>`;return;}
+  el.innerHTML=`<div class="text-xs font-mono text-slate-400 mb-4 uppercase tracking-wider pl-1 font-bold">Comments & Reactions</div><div class="space-y-4">` + COMMENTS.slice(0,20).map(c=>`
+    <div class="glass-panel p-4 rounded-xl flex items-start gap-4 border border-slate-800/50">
+      <div class="size-10 rounded-lg flex items-center justify-center text-xl shrink-0 border border-slate-700 shadow-inner" style="background:${c.color||'#00c4ff'}22; text-shadow: 0 0 10px ${c.color||'#00c4ff'}">${emj(c.user)}</div>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-xs font-bold font-mono" style="color:${c.color||'#00c4ff'}">${c.user}</span>
+            ${c.isCheer?'<span class="text-[10px] text-slate-500 font-mono px-1.5 py-0.5 rounded bg-slate-800/50">cheered</span>':''}
+            <span class="text-[9px] text-slate-500 font-mono ml-auto">${rt(c.ts)}</span>
+        </div>
+        <div class="text-sm font-medium text-slate-300 leading-relaxed">${c.isCheer?`<span class="text-2xl drop-shadow-md">${c.emoji}</span>`:c.text}</div>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+// ═══════════════════════════════════════
+// CHALLENGES
+// ═══════════════════════════════════════
+function popChSels(){
+  const tS=document.getElementById('ch-t-sel');const uS=document.getElementById('ch-u-sel');
+  if(!tS||!uS)return;
+  tS.innerHTML='<option value="">Select a topic…</option>'+AT().map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  const others=MEMBERS.filter(m=>m.name!==ME?.name);
+  uS.innerHTML='<option value="">Challenge who?</option>'+others.map(m=>`<option value="${m.name}">${m.name} (${m.role})</option>`).join('');
+}
+async function sendChallenge(){
+  const tid=document.getElementById('ch-t-sel').value;const to=document.getElementById('ch-u-sel').value;
+  if(!tid||!to){showToast('Select topic and person','e');return;}
+  const t=AT().find(x=>x.id===tid);
+  const sc=MQS[tid]||[];const myB=sc.length?Math.max(...sc.map(s=>Math.round((s.score/s.total)*100))):null;
+  CHALLENGES.unshift({from:ME.name,to,tid,tnm:t.name,fromScore:myB,toScore:null,ts:Date.now(),status:'open'});
+  await ss('challenges',CHALLENGES);
+  await addAct('ch',ME.name,`<strong>${ME.name}</strong> challenged <strong>${to}</strong>: <span style="color:var(--neon2)">${t.name}</span> 🎯`);
+  renderCh();showToast(`Challenge sent to ${to}! 🎯`,'s');
+}
+function renderCh(){
+  const inc=document.getElementById('in-ch');
+  const mine=CHALLENGES.filter(c=>c.to===ME?.name&&c.status==='open');
+  if(mine.length){
+    inc.innerHTML=`<div class="text-xs font-mono text-slate-400 mb-4 uppercase tracking-wider pl-1 font-bold">Incoming Challenges</div>`+
+    mine.map(c=>`<div class="glass-panel p-5 rounded-2xl border border-primary/30 mb-4 relative overflow-hidden bg-primary/5">
+      <div class="flex items-center justify-between mb-3 border-b border-primary/10 pb-3">
+          <div class="text-sm font-bold text-slate-100">⚡ Challenge from <span class="text-primary">${c.from}</span></div>
+          <div class="text-[9px] font-mono px-2 py-1 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">OPEN</div>
+      </div>
+      <div class="text-[10px] text-slate-400 font-mono mb-2">${rt(c.ts)}</div>
+      <div class="text-sm font-bold text-primary mb-4">${c.tnm}</div>
+      <div class="flex gap-2 flex-wrap mb-5">
+        ${c.fromScore!=null?`<div class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-mono"><span class="text-slate-400">${c.from}:</span> <span class="font-bold text-primary">${c.fromScore}%</span></div>`:'<div class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-mono">Challenge sent</div>'}
+        <div class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">You: Not attempted</div>
+      </div>
+      <div class="flex gap-3">
+        <button class="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-bold text-xs transition-colors shadow-lg" onclick="accCh(${CHALLENGES.indexOf(c)})">Accept & Quiz 🔥</button>
+        <button class="px-4 py-2.5 rounded-xl border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 font-bold text-xs transition-colors" onclick="decCh(${CHALLENGES.indexOf(c)})">Decline</button>
+      </div>
+    </div>`).join('');
+  } else {inc.innerHTML='';}
+  
+  const all=document.getElementById('all-ch');
+  const my=CHALLENGES.filter(c=>c.from===ME?.name||c.to===ME?.name);
+  if(!my.length){all.innerHTML=`<div class="text-center p-8 text-slate-500 font-mono text-xs border border-dashed border-slate-700/50 rounded-xl mt-4">No challenges yet. Send one above! 🎮</div>`;return;}
+  all.innerHTML=`<div class="text-xs font-mono text-slate-400 mb-4 uppercase tracking-wider pl-1 font-bold mt-8">All Challenges</div>`+my.map(c=>{
+    const isOpen = c.status==='open';
+    const bCol = isOpen?'border-orange-500/30 text-orange-400 bg-orange-500/10' : 'border-accent/30 text-accent bg-accent/10';
+    return `<div class="glass-panel p-4 rounded-xl border border-slate-800 mb-3 hover:border-slate-600 transition-colors">
+      <div class="flex items-start justify-between mb-2">
+          <div class="text-sm font-bold text-slate-100 pr-4 leading-tight">${c.tnm}</div>
+          <div class="text-[9px] font-mono px-2 py-0.5 rounded border shrink-0 uppercase ${bCol}">${c.status}</div>
+      </div>
+      <div class="text-[10px] text-slate-400 font-mono pb-3 mb-3 border-b border-slate-800/50">${c.from} ⚡ ${c.to} · ${rt(c.ts)}</div>
+      <div class="flex gap-2 flex-wrap">
+        ${c.fromScore!=null?`<div class="px-2 py-1 rounded bg-slate-800/80 border border-slate-700 text-[10px] font-mono"><span class="text-slate-500">${c.from}:</span> <span class="text-slate-200">${c.fromScore}%</span></div>`:''}
+        ${c.toScore!=null?`<div class="px-2 py-1 rounded bg-slate-800/80 border border-slate-700 text-[10px] font-mono"><span class="text-slate-500">${c.to}:</span> <span class="text-slate-200">${c.toScore}%</span></div>`:`<div class="px-2 py-1 rounded border border-dashed border-slate-700 text-[10px] font-mono text-slate-500">${c.to}: pending</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+function accCh(i){window._pci=i;openQ(CHALLENGES[i].tid);}
+async function decCh(i){CHALLENGES[i].status='declined';await ss('challenges',CHALLENGES);renderCh();showToast('Declined','i');}
+
+// ═══════════════════════════════════════
+// VIEW ROUTING
+// ═══════════════════════════════════════
+function gv(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.hn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.hn').forEach(b=>{
+    const t=b.textContent.toLowerCase();
+    if((v==='squad'&&t==='squad')||(v==='roadmap'&&t.includes('roadmap'))||(v==='quiz'&&t==='quizzes')||(v==='cheers'&&t==='cheers')||(v==='challenge'&&t==='challenges'))b.classList.add('active');
+  });
+  if(v==='squad')renderSquad();
+  if(v==='roadmap')renderRM();
+  if(v==='quiz')renderQHub();
+  if(v==='cheers')renderCmList();
+  if(v==='challenge'){renderCh();popChSels();}
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+let _tt;
+function showToast(msg,type='i'){
+  const el=document.getElementById('toast');el.textContent=msg;el.className='toast show t'+type;
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
